@@ -115,14 +115,7 @@ def calculateFitness():
 			if move is not None:
 				if isValidMove(startPoint,move):
 					startPoint = makeAMove(startPoint,move)
-				else:
-					fitness -= 2
-
-				if startPoint in visited:
-					fitness -= 1
-				else:
-					visited.add(startPoint)
-
+				fitness -= mazeDists[startPoint[0]][startPoint[1]]
 				if startPoint == exit:
 					fitness += fitnessConstant
 
