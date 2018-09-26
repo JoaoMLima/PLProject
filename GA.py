@@ -1,4 +1,4 @@
-from random import random,randint,shuffle,choice,sample
+from random import random,randint,shuffle,choice,sample,randrange
 from sys import setrecursionlimit
 from time import sleep
 from os import system
@@ -16,8 +16,8 @@ def isAWall(x,y):
 ########################################################################
 
 ################### Informacoes/Funcoes do labirinto ###################
-# Algoritmo de Gilmar totalmente corrigido pelo próprio, gera um labirinto chamado maze de tamanho sizeXsize
-# uma matriz chamada mazeDists de tamanho sizeXsize que possui as distâncias de cada ponto para a saída.
+# Algoritmo de Gilmar totalmente corrigido pelo proprio, gera um labirinto chamado maze de tamanho sizeXsize
+# uma matriz chamada mazeDists de tamanho sizeXsize que possui as distancias de cada ponto para a saida.
 def generateMaze(mazeSize):
 	x,y = randrange(1,mazeSize, 2),(mazeSize-1)*randint(0, 1)
 	coords = [(x,x),(y, y-1 if y else 1)]
@@ -43,15 +43,14 @@ mazeSize = 11 # line/column
 wallIcon = '#'
 maze = [[wallIcon]*mazeSize for i in xrange(mazeSize)]
 mazeDists = [[-1]*mazeSize for i in xrange(mazeSize)]
-for i in maze:
-	print i
+
 spawn,exit = generateMaze(mazeSize)
+'''
 for i in maze:
 	print i
 for i in mazeDists:
 	print i
-#maze = [[wallIcon]*mazeSize[1] for i in xrange(mazeSize[0])]
-#spawn,exit = generateMaze()
+'''
 numOfWalls = sum([maze[i].count(wallIcon) for i in xrange(mazeSize)])
 
 def drawMaze(maze):
