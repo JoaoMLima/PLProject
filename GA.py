@@ -6,7 +6,7 @@ setrecursionlimit = 10000
 
 ######################### Funcoes de validacao #########################
 def isValid(x,y):
-	if 0 <= x <= mazeSize[0]-1 and 0 <= y <= mazeSize[1]-1:
+	if 0 <= x < mazeSize and 0 <= y < mazeSize:
 		return True
 	return False
 
@@ -16,44 +16,49 @@ def isAWall(x,y):
 ########################################################################
 
 ################### Informacoes/Funcoes do labirinto ###################
-# Algoritmo de Gilmar n esta fazendo labirintos bonitinhos, talvez eu tenha copiado algo errado
-def generateMaze():
-	x,y = randint(1,mazeSize[0]-1),(mazeSize[1]-1)*(randint(1,mazeSize[1]-1)&1)
-	coords = [(x,x),(y, mazeSize[1]-2 if y else 1)]
+# Algoritmo de Gilmar totalmente corrigido pelo próprio, gera um labirinto chamado maze de tamanho sizeXsize
+# uma matriz chamada mazeDists de tamanho sizeXsize que possui as distâncias de cada ponto para a saída.
+def generateMaze(mazeSize):
+	x,y = randrange(1,mazeSize, 2),(mazeSize-1)*randint(0, 1)
+	coords = [(x,x),(y, y-1 if y else 1)]
 	shuffle(coords)
-	spawn,exit = (coords[0][1],coords[1][1]),(coords[0][0],coords[1][0])
+	dfsStart, exit, spawn = (coords[0][1], coords[1][1]), (coords[0][0],coords[1][0]), (randrange(1, mazeSize, 2), randrange(1, mazeSize, 2))
+	maze[dfsStart[0]][dfsStart[1]] = ' '
 	maze[exit[0]][exit[1]] = 'E'
+	mazeDists[exit[0]][exit[1]] = 0
+	generateMazeRecursive(dfsStart[0],dfsStart[1],1)
 	maze[spawn[0]][spawn[1]] = 'S'
-	generateMazeRecursive(spawn[0],spawn[1])
 	return spawn,exit
 
-def generateMazeRecursive(x,y):
+def generateMazeRecursive(y,x,dist):
+	mazeDists[y][x] = dist
 	pairs = [(1,0),(0,1),(-1,0),(0,-1)]
 	shuffle(pairs)
 	for i in xrange(4):
-		if isValid(y+2*pairs[i][0],x+pairs[i][1]) and isAWall(y+pairs[i][0],x+pairs[i][1]):
+		if isValid(y+2*pairs[i][0],x+2*pairs[i][1]) and isAWall(y+2*pairs[i][0],x+2*pairs[i][1]):
 			maze[y+pairs[i][0]][x+pairs[i][1]] = maze[y+2*pairs[i][0]][x+2*pairs[i][1]] = ' '
-			generateMazeRecursive(y+2*pairs[i][0],x+2*pairs[i][1])
-
-mazeSize = (5,5) # line/column
+			mazeDists[y+pairs[i][0]][x+pairs[i][1]] = dist+1
+			generateMazeRecursive(y+2*pairs[i][0],x+2*pairs[i][1], dist+2)
+mazeSize = 11 # line/column
 wallIcon = '#'
-maze = [
-['#','#','#','#','#'],
-['#','S','#',' ','E'],
-['#',' ','#',' ','#'],
-['#',' ',' ',' ','#'],
-['#','#','#','#','#']
-]
-spawn,exit = (1,1),(1,4)
+maze = [[wallIcon]*mazeSize for i in xrange(mazeSize)]
+mazeDists = [[-1]*mazeSize for i in xrange(mazeSize)]
+for i in maze:
+	print i
+spawn,exit = generateMaze(mazeSize)
+for i in maze:
+	print i
+for i in mazeDists:
+	print i
 #maze = [[wallIcon]*mazeSize[1] for i in xrange(mazeSize[0])]
 #spawn,exit = generateMaze()
-numOfWalls = sum([maze[i].count(wallIcon) for i in xrange(mazeSize[0])])
+numOfWalls = sum([maze[i].count(wallIcon) for i in xrange(mazeSize)])
 
 def drawMaze(maze):
 	slp = 0.3
-	for i in xrange(mazeSize[0]):
+	for i in xrange(mazeSize):
 		separator = " "
-		if not i or i == mazeSize[0]-1:
+		if not i or i == mazeSize-1:
 			separator = wallIcon
 		print separator.join(maze[i])
 		sleep(slp)
@@ -76,7 +81,7 @@ moves = {'U':(-1,0),'D':(1,0),'L':(0,-1),'R':(0,1)}
 
 ######################  Informacoes/Funcoes do GA ######################
 populationSize = 1000
-chromossomeSize = mazeSize[0]*mazeSize[1] - numOfWalls -1
+chromossomeSize = mazeSize ** 2 - numOfWalls -1
 population = [(i,[None]*chromossomeSize) for i in xrange(populationSize)]
 individualsFitness = [-1]*populationSize
 mutationChance = 0.1
