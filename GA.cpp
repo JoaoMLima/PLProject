@@ -10,16 +10,16 @@ typedef struct individual;
 ///////////////////////////////////////////////
 Variaveis iniciais
 */
-const int mazeSize = 11;
+const int mazeSize = 0;
 const int populationSize = 1000;
 const double mutationChance = 0.1;
 const int fitnessConstant = 1e6;
 vector<individual> population;
-char maze[mazeSize][mazeSize+1];
-int mazeDists[mazeSize][mazeSize];
+char **maze;
+int **mazeDists;
 char wallIcon = '|';
 pair<int, int> spawn, escape;
-int numOfWalls = mazeSize * mazeSize;
+int numOfWalls = 0;
 char directions[4] = {'U', 'D', 'L', 'R'};
 map<char, pair<int, int> > moves = {{'U', {-1, 0}}, {'D', {1, 0}}, {'L', {0, -1}}, {'R', {0, 1}}};
 int chromossomeSize;
@@ -65,6 +65,18 @@ int randomRange(int start, int end, int step) {
     return (((rand()%(end-start+1))/step)*step)+start;
 }
 
+void initVariables() {
+    mazeSize = 2*mazeSize+1;
+    maze = new char*[mazeSize];
+    mazeDists = new int*[mazeSize];
+    for(int i = 0 ; i < mazeSize; i++){
+       maze[i] = (char *)malloc(mazeSize*sizeof(char));
+       memset(maze[i], wallIcon, mazeSize*sizeof(char));
+       mazeDists[i] = (int *)malloc(mazeSize*sizeof(int));
+       memset(mazeDists[i], -1, mazeSize*sizeof(int));
+    }
+}
+
 /*
 ///////////////////////////////////////////////
 Funcoes utilitarias
@@ -85,9 +97,7 @@ void mazeGeneratorRecursive(int x, int y, int dist) {
     }
 }
 void mazeGenerator() {
-    memset(maze, wallIcon, sizeof maze);
-    for(int i = 0; i < mazeSize; i++) { maze[i][mazeSize] = '\n';}
-    memset(mazeDists, -1, sizeof mazeDists);
+    initVariables();
     int x = randomRange(1, mazeSize-1, 2), y = (mazeSize-1)*randomRange(0, 1, 1);
     pairOfPairs coords = {{x, y}, {x, (y) ? y-1 : 1}};
     if (randomRange(0, 1, 1)) {
@@ -102,8 +112,14 @@ void mazeGenerator() {
     maze[spawn.F][spawn.S] = 'S';
     chromossomeSize = mazeSize * mazeSize - numOfWalls - 1;
 }
+
 void drawMaze() {
-    printf("%s", maze);
+    for(int i = 0; i < mazeSize; i++) {
+        for(int j = 0; j < mazeSize; j++) {
+            putchar(maze[i][j]);
+        }
+        putchar('\n');
+    }
 }
 
 void initPopulation () {
