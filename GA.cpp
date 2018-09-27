@@ -32,7 +32,7 @@ Structs iniciais
 
 struct individual {
     int fitness;
-    vector<int> moves;
+    vector<char> moves;
     individual() {fitness = 0;}
     bool operator < (individual other) {
         //Comparador utilizado no sort
@@ -44,6 +44,18 @@ struct individual {
 ///////////////////////////////////////////////
 Funcoes auxiliares
 */
+
+bool isValid(int x, int y){
+    bool xValid = (0 <= x  && x < mazeSize );
+    bool yValid = (0 <= y  && y < mazeSize );
+    return xValid && yValid;
+}
+ 
+bool isAWall(int x, int y){
+    return maze[x][y] == wallIcon;
+}
+
+
 
 void randomSeed() {
     srand((int)time(0));
@@ -96,6 +108,40 @@ void drawMaze() {
 
 void initPopulation () {
 }
+
+/*
+///////////////////////////////////////////////
+Metodos de movimento
+*/
+
+pair<int, int> vectorSum(pair<int, int> point, pair<int, int> direction){
+    pair<int, int> newPoint = {point.F + direction.F, point.S + direction.S};
+    return newPoint;
+}
+ 
+pair<int, int> makeAMove(pair<int, int> point, char direction){
+    return vectorSum(point, moves[direction]);
+}
+ 
+bool isValidMove(pair<int, int> point, char direction){
+    pair<int, int> newPoint = vectorSum(point, moves[direction]);
+    return isValid(newPoint.F, newPoint.S) && isAWall(newPoint.F, newPoint.S);
+}
+
+/*
+///////////////////////////////////////////////
+Metodos do GA
+*/
+
+void sortByFitness(){
+    reverse (population.begin(), population.end());
+}
+ 
+vector<char> getFittest(){
+    sortByFitness();
+    return population.front().moves;
+}
+
 
 /*
 ///////////////////////////////////////////////
