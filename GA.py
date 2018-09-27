@@ -1,9 +1,10 @@
 from random import random,randint,shuffle,choice,sample,randrange
-from sys import setrecursionlimit
+from sys import setrecursionlimit,stdout
 from time import sleep
 from os import system
-setrecursionlimit = 10000
+setrecursionlimit = 100000
 
+write = stdout.write
 ######################### Funcoes de validacao #########################
 def isValid(x,y):
 	if 0 <= x < mazeSize and 0 <= y < mazeSize:
@@ -39,22 +40,16 @@ def generateMazeRecursive(y,x,dist):
 			maze[y+pairs[i][0]][x+pairs[i][1]] = maze[y+2*pairs[i][0]][x+2*pairs[i][1]] = ' '
 			mazeDists[y+pairs[i][0]][x+pairs[i][1]] = dist+1
 			generateMazeRecursive(y+2*pairs[i][0],x+2*pairs[i][1], dist+2)
-mazeSize = 11 # line/column
+mazeSize = 15 # line/column
 wallIcon = '#'
 maze = [[wallIcon]*mazeSize for i in xrange(mazeSize)]
 mazeDists = [[-1]*mazeSize for i in xrange(mazeSize)]
 
 spawn,exit = generateMaze(mazeSize)
-'''
-for i in maze:
-	print i
-for i in mazeDists:
-	print i
-'''
 numOfWalls = sum([maze[i].count(wallIcon) for i in xrange(mazeSize)])
 
 def drawMaze(maze):
-	slp = 0.3
+	slp = 0
 	for i in xrange(mazeSize):
 		separator = " "
 		if not i or i == mazeSize-1:
@@ -77,13 +72,14 @@ def isValidMove(point,direction):
 
 directions = ['U','D','L','R']
 moves = {'U':(-1,0),'D':(1,0),'L':(0,-1),'R':(0,1)}
+coherentMoves = {'U':['U','L','R'],'D':['D','L','R'],'R':['R','D','U'],'L':['L','D','U']}
 
 ######################  Informacoes/Funcoes do GA ######################
 populationSize = 1000
 chromossomeSize = mazeSize ** 2 - numOfWalls -1
 population = [(i,[None]*chromossomeSize) for i in xrange(populationSize)]
 individualsFitness = [-1]*populationSize
-mutationChance = 0.1
+mutationChance = 0.3
 fitnessConstant = 10e6
 
 # Grupos do fitness
@@ -92,7 +88,7 @@ groups = {1:(0,quartil[0]),
 		  2:(quartil[0]+1,quartil[1]),
 		  3:(quartil[1]+1,quartil[2]),
 		  4:(quartil[2]+1,populationSize-1)}
-groupsChance = [0.5,0.25,0.15,0.1]
+groupsChance = [0.65,0.20,0.1,0.05]
 groupsArray = [1]*(int(groupsChance[0]*100)) + [2]*(int(groupsChance[1]*100)) + [3]*(int(groupsChance[2]*100)) + [4]*(int(groupsChance[3]*100))
 
 
@@ -115,19 +111,23 @@ def calculateFitness():
 			if move is not None:
 				if isValidMove(startPoint,move):
 					startPoint = makeAMove(startPoint,move)
+					fitness += 1
 				else:
-					fitness -= 2
+					fitness -= 5
 
 				if startPoint in visited:
-					fitness -= 1
+					fitness -= 3.5
 				else:
 					visited.add(startPoint)
 
 				if startPoint == exit:
-					fitness += fitnessConstant
+					fitness *= fitnessConstant
 
 		if not individual:
 			fitness = -fitnessConstant
+		
+		## Mudei
+		fitness -= mazeDists[startPoint[0]][startPoint[1]]*1000
 
 		individualsFitness[k] = fitness
 
@@ -135,17 +135,19 @@ def getFitness(index):
 	return individualsFitness[index]
  
 def sortByFitness():
-	population.sort(key = lambda pop : individualsFitness[pop[0]], reverse = True)
+	population.sort(key = lambda pop : (individualsFitness[pop[0]],-len(pop[1])), reverse = True)
 
 def getFittest():
 	sortByFitness()
 	return population[0][1]
 
+## Mudei
 def initPopulation():
 	for index in xrange(populationSize):
 		counter = 0
 		for move in xrange(randint(1,chromossomeSize)):
-			population[index][1][counter] = choice(directions)
+			if move:population[index][1][counter] = choice(coherentMoves[population[index][1][counter-1]])
+			else: population[index][1][counter] = choice(directions)
 			counter += 1
 
 def crossOver():
@@ -165,17 +167,22 @@ def crossOver():
 			mommy = population[randint(l2,r2)][1]
 
 			first,second = sample([daddy,mommy],2)
-			crossOverPoint = randint(1,chromossomeSize/2) 
+			crossOverPoint = randint(1,chromossomeSize) 
 			
 			for k in xrange(crossOverPoint):
 				if k < len(first):
-					if first[k] is None: break
+					if first[k] is None: 
+						crossOverPoint = k
+						break
 					son.append(first[k])
+					
 
-			for j in xrange(crossOverPoint):
+			for j in xrange(crossOverPoint,chromossomeSize):
 				if j < len(second):
 					if second[j] is None: break
-					son.append(second[j])
+					#Mudei
+					if j == crossOverPoint: son.append(choice(coherentMoves[son[-1]]))
+					else: son.append(second[j])
 
 			sonString = ''.join(son)
 			if sonString not in cromossomesSet:
@@ -188,45 +195,56 @@ def crossOver():
 
 	return newPopulation
 
+## Mudei
 def mutation(cromossome):
 	if mutationChance > random() and cromossome:
 		if random() > 0.6:
-			cromossome.append(choice(directions))
+			for i in xrange(randint(1,chromossomeSize/2)):
+				if cromossome: cromossome.append(choice(coherentMoves[cromossome[-1]]))
+				else : cromossome.append(choice(directions))
 		else:
-			cromossome[randint(0,len(cromossome)-1)] = choice(directions)
+			for i in xrange(randint(1,chromossomeSize)):
+				idx = randint(0,len(cromossome)-1)
+				if idx: cromossome[idx] = choice(coherentMoves[cromossome[idx-1]])
+				else: cromossome[idx] = choice(directions)
 
 def drawFittestMoves(fittest,generation):
-	drawMaze(mazeCopy)
+	drawMaze(maze)
+	mazeCopy = maze
+	move = spawn
 	for direction in fittest:
-		move = moves[direction]
-		mazeCopy[move[0]][move[1]] = 'M'
-		system('cls||clear')
-		drawMaze(mazeCopy)
-		sleep(0.3)
+		if direction is not None and isValidMove(move,direction): 
+			move = makeAMove(move,direction)
+			if move == exit: break
+			mazeCopy[move[0]][move[1]] = 'M'
+			system('cls||clear')
+			drawMaze(mazeCopy)
+			print "Generation %i Fittest Fitness = %f" %(generation,fittestFitness%fitnessConstant)
+			sleep(0.3)
+			
 	sleep(1)
 
 ########################################################################
-
-drawMaze(maze)
 initPopulation()
 fittest = generation = fittestFitness = 0
-fittestsSet = set()
 count = 0
 
 # Esse count eh soh para efeitos de teste
-while count < 1000 and fittestFitness <= fitnessConstant:
+while count < 20000 and fittestFitness <= fitnessConstant:
 	calculateFitness()
 	fittest = getFittest()
 	fittestFitness = getFitness(population[0][0])
-	if generation > 0: fittestsSet.add(''.join(fittest))
 
-	print "Generation %i Fittest Fitness = %f" %(generation,fittestFitness)
-	print fittest
 	population = crossOver()
 	
 	generation += 1
 	count +=1
+	
+	print 'Solving','.'*(generation%5)
+	sleep(0.5)
+	system('cls||clear')
 
-print "Generation %i Fittest Fitness = %f" %(generation,fittestFitness)
-print fittest
 
+sleep(1)
+drawFittestMoves(fittest,generation)
+input()
