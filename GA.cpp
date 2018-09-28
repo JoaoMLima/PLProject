@@ -1,5 +1,8 @@
 #include <bits/stdc++.h>
-#include <windows.h>
+//#include <windows.h>
+#include <unistd.h>
+#include <thread>
+#include <chrono>
 #define put push_back
 #define F first
 #define S second
@@ -39,13 +42,13 @@ Structs iniciais
 
 struct individual
 {
-    int fitness;
+    long long fitness;
     vector<char> moves;
-    individual() { fitness = 0; }
+    individual() { fitness = 0ll; }
     bool operator<(individual other)
     {
         //Comparador utilizado no sort
-        return fitness < other.fitness;
+        return fitness > other.fitness;
     }
 };
 
@@ -93,7 +96,6 @@ void initVariables()
         mazeDists[i] = (int *)malloc(mazeSize * sizeof(int));
         memset(mazeDists[i], -1, mazeSize * sizeof(int));
     }
-    // double groupsChance[5] = {0.5, 0.25, 0.15, 0.08, 0.02};
     int j = 5;
     int count = 0;
     for (int i = 99; i >= 0; i--)
@@ -110,6 +112,28 @@ void initVariables()
             i++;
         }
     }
+}
+
+/*
+///////////////////////////////////////////////
+Metodos de movimento
+*/
+
+pair<int, int> vectorSum(pair<int, int> point, pair<int, int> direction)
+{
+    pair<int, int> newPoint = {point.F + direction.F, point.S + direction.S};
+    return newPoint;
+}
+
+pair<int, int> makeAMove(pair<int, int> point, char direction)
+{
+    return vectorSum(point, moves[direction]);
+}
+
+bool isValidMove(pair<int, int> point, char direction)
+{
+    pair<int, int> newPoint = vectorSum(point, moves[direction]);
+    return isValid(newPoint.F, newPoint.S) && !isAWall(newPoint.F, newPoint.S);
 }
 
 /*
@@ -145,12 +169,21 @@ void mazeGenerator()
         swap(coords.S.F, coords.S.S);
     }
     escape = coords.F, spawn = {randomRange(1, mazeSize - 1, 2), randomRange(1, mazeSize - 1, 2)};
-    maze[escape.F][escape.S] = 'E', maze[coords.S.F][coords.S.S] = ' ';
+    maze[escape.F][escape.S] = 'E', maze[coords.S.F]
+                [coords.S.S] = ' ';
     mazeDists[escape.F][escape.S] = 0;
     numOfWalls -= 2;
     mazeGeneratorRecursive(coords.S.F, coords.S.S, 1);
     maze[spawn.F][spawn.S] = 'S';
     chromossomeSize = mazeSize * mazeSize - numOfWalls;
+}
+
+void limparTela() {
+    #ifdef WIN32
+        system("cls");
+    #else
+        system("clear");
+    #endif
 }
 
 void drawMaze()
@@ -163,6 +196,32 @@ void drawMaze()
         }
         putchar('\n');
     }
+}
+
+
+void drawFittest(vector<char> fittest)
+{
+    this_thread::sleep_for(std::chrono::seconds(2));
+    limparTela();
+    pair<int, int> indi = spawn;
+    for(int h = 0; h < fittest.size(); h++) {
+        maze[indi.F][indi.S] = '*';
+        drawMaze();
+        maze[indi.F][indi.S] = ' ';
+        if (isValidMove(indi, fittest[h])) {
+            indi = makeAMove(indi, fittest[h]);
+        }
+        if(maze[spawn.F][spawn.S] == ' '){
+            maze[spawn.F][spawn.S] = 'S';
+        }
+        this_thread::sleep_for(std::chrono::milliseconds(300));
+        limparTela();
+        if(indi == escape) {
+            break;
+        }
+    }
+    maze[indi.F][indi.S] = '*';
+    drawMaze();
 }
 
 void initPopulation()
@@ -182,28 +241,6 @@ void initPopulation()
             }
         }
     }
-}
-
-/*
-///////////////////////////////////////////////
-Metodos de movimento
-*/
-
-pair<int, int> vectorSum(pair<int, int> point, pair<int, int> direction)
-{
-    pair<int, int> newPoint = {point.F + direction.F, point.S + direction.S};
-    return newPoint;
-}
-
-pair<int, int> makeAMove(pair<int, int> point, char direction)
-{
-    return vectorSum(point, moves[direction]);
-}
-
-bool isValidMove(pair<int, int> point, char direction)
-{
-    pair<int, int> newPoint = vectorSum(point, moves[direction]);
-    return isValid(newPoint.F, newPoint.S) && !isAWall(newPoint.F, newPoint.S);
 }
 
 /*
@@ -266,14 +303,10 @@ void calculateFitness()
     string fittestString(bestIndiv.moves.begin(), bestIndiv.moves.end());
     cout << fittestString << endl;
 }
-bool mySort(const individual &a, const individual &b)
-{
-    return a.fitness > b.fitness;
-}
 
 void sortByFitness()
 {
-    sort(population.begin(), population.end(), mySort);
+    sort(population.begin(), population.end());
 }
 
 double doubleRand()
@@ -404,10 +437,15 @@ Metodo main
 int main()
 {
     randomSeed();
-    printf(
-        "---------------------------------------------------------- \n\
-#################### - MAZER SOLVER - #################### \n\
----------------------------------------------------------- \n");
+    
+    printf( "###################################################################################################################\n");
+    printf( ".___  ___.      ___      ________   _______         _______.  ______    __      ____    ____  _______ .______      \n");
+    printf( "|   \\/   |     /   \\    |       /  |   ____|       /       | /  __  \\  |  |     \\   \\  /   / |   ____||   _  \\     \n");
+    printf( "|  \\  /  |    /  ^  \\   `---/  /   |  |__         |   (----`|  |  |  | |  |      \\   \\/   /  |  |__   |  |_)  |    \n");
+    printf( "|  |\\/|  |   /  /_\\  \\     /  /    |   __|         \\   \\    |  |  |  | |  |       \\      /   |   __|  |      /     \n");
+    printf( "|  |  |  |  /  _____  \\   /  /----.|  |____    .----)   |   |  `--'  | |  `----.   \\    /    |  |____ |  |\\ \\----.\n");
+    printf( "|__|  |__| /__/     \\__\\ /________||_______|   |_______/     \\______/  |_______|    \\__/     |_______|| _| `._____|\n\n");
+    printf( "###################################################################################################################\n\n");
     cout << "Size of maze: ";
     cin >> mazeSize;
     mazeSize = mazeSize;
@@ -443,7 +481,6 @@ int main()
     cin >> limitOfGenerations;
     cout << endl;
     */
-
     int start_s = clock();
     //fittestFitness < fitnessConstant + fitnessConstant / 100
     while (generation < limitOfGenerations && !finished)
@@ -451,16 +488,20 @@ int main()
         cout << generation << " ";
         calculateFitness();
         sortByFitness();
-
         if (!finished)
         {
             population = crossover();
         }
         generation += 1;
     }
-
+    sortByFitness();
+    fittest = population[0].moves;
     int stop_s = clock();
-    cout << "time: " << (stop_s - start_s) / double(CLOCKS_PER_SEC) * 1000 << endl;
+
+    drawFittest(fittest);
+    cout << "Generation " << generation << " Fittest Fitness = " << population[0].fitness << endl;
+
+    cout << "Time to solve: " << (stop_s - start_s) / (double(CLOCKS_PER_SEC)) << endl;
 
     return 0;
 }
