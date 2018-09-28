@@ -48,7 +48,7 @@ def drawMaze(maze):
 		separator = " "
 		if not i or i == mazeSize-1:
 			separator = wallIcon
-		print separator.join(maze[i])
+		print (separator.join(maze[i]))
 		sleep(slp)
 
 ########################################################################
@@ -208,13 +208,14 @@ def drawFittestMoves(fittest,generation):
 	move = spawn
 	for direction in fittest:
 		if direction is not None and isValidMove(move,direction): 
+			mazeCopy[spawn[0]][spawn[1]] = 'S'
 			mazeCopy[move[0]][move[1]] = ' '
 			move = makeAMove(move,direction)
 			if move == exit: break
 			mazeCopy[move[0]][move[1]] = 'M'
 			system('cls||clear')
 			drawMaze(mazeCopy)
-			print "Generation %i Fittest Fitness = %.0f" %(generation,fittestFitness%fitnessConstant)
+			print ("Generation %i Fittest Fitness = %.0f" %(generation,fittestFitness%fitnessConstant))
 			sleep(0.3)
 			
 	sleep(1)
@@ -266,6 +267,8 @@ groupsArray = [1]*(int(groupsChance[0]*100)) + [2]*(int(groupsChance[1]*100)) + 
 
 initPopulation()
 fittest = generation = fittestFitness = 0
+limitOfGenerations = int(raw_input('Limit of Generations: ') or '20000')
+
 count = 0
 finalists = []
 
@@ -273,21 +276,20 @@ finalists = []
 startTime = time()
 
 # Esse count eh soh para efeitos de teste
-while count < 20000 and len(finalists) < 5:
+while generation < limitOfGenerations and len(finalists) < 5:
 	calculateFitness()
 	fittest = getFittest()
 	fittestFitness = getFitness(population[0][0])
 
 	if fittestFitness > fitnessConstant:
 		finalists.append(fittest)
-	print len(finalists)
+	print (len(finalists))
 
 	population = crossOver()
 	
 	generation += 1
-	count +=1
 	
-	print 'Solving','.'*(generation%5)
+	print ('Solving','.'*(generation%5))
 	sleep(0.5)
 	system('cls||clear')
 
@@ -300,5 +302,5 @@ fittest = finalists[0]
 
 sleep(1)
 drawFittestMoves(fittest,generation)
-print("Time Executation: %.2f seconds" %(exec_time))
-input()
+print("Time to solve: %.2f seconds" %(exec_time))
+raw_input()

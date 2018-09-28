@@ -1,4 +1,5 @@
 #include <bits/stdc++.h>
+#include <windows.h>
 #define put push_back
 #define F first
 #define S second
@@ -11,7 +12,7 @@ typedef struct individual;
 Variaveis iniciais
 */
 int mazeSize = 0;
-const int populationSize = 1000;
+int populationSize = 1000;
 const double mutationChance = 0.4;
 const int fitnessConstant = 10e6;
 vector<individual> population;
@@ -70,12 +71,16 @@ void randomSeed()
 
 int randomRange(int start, int end, int step = 1)
 {
+    if (start > end){
+        int temp = start;
+        start = end;
+        end = start;
+    }
     return (((rand() % (end - start + 1)) / step) * step) + start;
 }
 
 void initVariables()
 {
-    mazeSize = 2 * mazeSize + 1;
     maze = new char *[mazeSize];
     mazeDists = new int *[mazeSize];
     for (int i = 0; i < mazeSize; i++)
@@ -85,15 +90,20 @@ void initVariables()
         mazeDists[i] = (int *)malloc(mazeSize * sizeof(int));
         memset(mazeDists[i], -1, mazeSize * sizeof(int));
     }
-    int j = 0;
-    for (int i = 0; i < 100;)
+    // double groupsChance[5] = {0.5, 0.25, 0.15, 0.08, 0.02};
+    int j = 5;
+    int count = 0;
+    for (int i = 99; i >= 0; i--)
     {
-        if (i < (int)groupsChance[i] * 100)
-        {
-            groupsArray[i] = j + 1;
+        if (count < groupsChance[j-1]*100 ){
+            count++;
+            groupsArray[i] = j;
+        }
+        else {
+            count = 0;
+            j--;
             i++;
         }
-        j++;
     }
 }
 
@@ -121,7 +131,7 @@ void mazeGeneratorRecursive(int x, int y, int dist)
 }
 void mazeGenerator()
 {
-    initVariables();
+    
     int x = randomRange(1, mazeSize - 1, 2), y = (mazeSize - 1) * randomRange(0, 1);
     pairOfPairs coords = {{x, y}, {x, (y) ? y - 1 : 1}};
     if (randomRange(0, 1))
@@ -317,10 +327,9 @@ vector<individual> crossover()
             int l2 = pairL.S;
             int r1 = pairR.F;
             int r2 = pairR.S;
-
-            vector<char> daddy = population.at(randomRange(l1, r1)).moves;
-            vector<char> mommy = population.at(randomRange(l2, r2)).moves;
-
+            vector<char> daddy = population[(randomRange(l1, r1))].moves;
+            vector<char> mommy = population[(randomRange(l2, r2))].moves;
+            
             if (l1 == 0 && l2 != 0)
             {
                 for (int a = 0; a < chromossomeSize / 2; a++)
@@ -410,9 +419,66 @@ Metodo main
 int main()
 {
     randomSeed();
-    mazeGenerator();
-    drawMaze();
+    printf(
+"---------------------------------------------------------- \n\
+#################### - MAZER SOLVER - #################### \n\
+---------------------------------------------------------- \n"
+            );
+    cout << "Size of maze: ";
+    cin >> mazeSize;
+    mazeSize = 2 * mazeSize + 1;
+    cout << endl;
+    bool generate = true;
+    do
+    { 
+        initVariables();
+        mazeGenerator();
+        drawMaze();
+        cout << "Generate new maze?(y/n): ";
+        string resposta;
+        cin >> resposta;
+        generate = (resposta == "y") ? true : false;
+    } while(generate);
+    
+    cout << "Size of population: ";
+    cin >> populationSize;
+    cout << endl;
+    
     initPopulation();
+    int generation = 0; 
+    int fittestFitness = 0;
+    vector<char> fittest;
 
+    int limitOfGenerations = 20000;
+/*
+    cout << "Limit of Generations: ";
+    cin >> limitOfGenerations;
+    cout << endl;
+    */
+    
+    int start_s=clock();
+
+    while(generation < limitOfGenerations){
+        calculateFitness();
+        fittest = getFittest();
+        fittestFitness = population.front().fitness;
+        
+        ///if fittestFitness > fitnessConstant : finalists.append(fittest);
+        ///print (len(finalists))
+
+        population = crossover();
+        
+        generation += 1;
+
+        //Sleep(500);        
+        
+        string fittestString(fittest.begin(), fittest.end());     
+        cout << fittestString << endl;     
+        //system ("CLS"); 
+    }
+
+    int stop_s=clock();
+    cout << "time: " << (stop_s-start_s)/double(CLOCKS_PER_SEC)*1000 << endl;
+   
     return 0;
 }
