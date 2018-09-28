@@ -13,22 +13,24 @@ Variaveis iniciais
 */
 int mazeSize = 0;
 int populationSize = 1000;
-const double mutationChance = 0.4;
+const double mutationChance = 0.1;
 const int fitnessConstant = 10e6;
 vector<individual> population;
 char **maze;
 int **mazeDists;
 char wallIcon = '|';
-pair<int, int> spawn, escape;
+pair<int, int> spawn;
+pair<int, int> escape;
 int numOfWalls = 0;
 char directions[4] = {'U', 'D', 'L', 'R'};
 map<char, pair<int, int>> moves = {{'U', {-1, 0}}, {'D', {1, 0}}, {'L', {0, -1}}, {'R', {0, 1}}};
-int chromossomeSize;
+int chromossomeSize = 0;
 map<char, array<char, 3>> coherentMoves = {{'U', {'U', 'L', 'R'}}, {'D', {'D', 'L', 'R'}}, {'R', {'R', 'D', 'U'}}, {'L', {'L', 'D', 'U'}}};
 int quartil[4] = {(int)(populationSize * 0.01), (int)(populationSize * 0.25), (int)(populationSize * 0.4), (int)(populationSize * 0.75)};
 map<int, pair<int, int>> groups = {{1, {0, quartil[0]}}, {2, {quartil[0] + 1, quartil[1]}}, {3, {quartil[1] + 1, quartil[2]}}, {4, {quartil[2] + 1, quartil[3]}}, {5, {quartil[3] + 1, populationSize - 1}}};
 double groupsChance[5] = {0.5, 0.25, 0.15, 0.08, 0.02};
 int groupsArray[100];
+bool finished = false;
 
 /*
 ///////////////////////////////////////////////
@@ -71,7 +73,8 @@ void randomSeed()
 
 int randomRange(int start, int end, int step = 1)
 {
-    if (start > end){
+    if (start > end)
+    {
         int temp = start;
         start = end;
         end = start;
@@ -95,11 +98,13 @@ void initVariables()
     int count = 0;
     for (int i = 99; i >= 0; i--)
     {
-        if (count < groupsChance[j-1]*100 ){
+        if (count < groupsChance[j - 1] * 100)
+        {
             count++;
             groupsArray[i] = j;
         }
-        else {
+        else
+        {
             count = 0;
             j--;
             i++;
@@ -131,7 +136,7 @@ void mazeGeneratorRecursive(int x, int y, int dist)
 }
 void mazeGenerator()
 {
-    
+
     int x = randomRange(1, mazeSize - 1, 2), y = (mazeSize - 1) * randomRange(0, 1);
     pairOfPairs coords = {{x, y}, {x, (y) ? y - 1 : 1}};
     if (randomRange(0, 1))
@@ -145,7 +150,7 @@ void mazeGenerator()
     numOfWalls -= 2;
     mazeGeneratorRecursive(coords.S.F, coords.S.S, 1);
     maze[spawn.F][spawn.S] = 'S';
-    chromossomeSize = mazeSize * mazeSize - numOfWalls - 1;
+    chromossomeSize = mazeSize * mazeSize - numOfWalls;
 }
 
 void drawMaze()
@@ -198,7 +203,7 @@ pair<int, int> makeAMove(pair<int, int> point, char direction)
 bool isValidMove(pair<int, int> point, char direction)
 {
     pair<int, int> newPoint = vectorSum(point, moves[direction]);
-    return isValid(newPoint.F, newPoint.S) && isAWall(newPoint.F, newPoint.S);
+    return isValid(newPoint.F, newPoint.S) && !isAWall(newPoint.F, newPoint.S);
 }
 
 /*
@@ -208,24 +213,24 @@ Metodos do GA
 
 void calculateFitness()
 {
+
+    individual bestIndiv = individual();
+
     for (int i = 0; i < populationSize; i++)
     {
-        individual indiv = population[i];
         set<pair<int, int>> visited;
         long long fitness = fitnessConstant;
         pair<int, int> startPoint = spawn;
         visited.insert(spawn);
-        bool finished = false;
 
-        // Talvez seja necessario colocar uma verificacao de not null aqui
-        for (int j = 0; j < indiv.moves.size(); j++)
+        for (int j = 0; j < population[i].moves.size(); j++)
         {
-            char move = indiv.moves[j];
+            char move = population[i].moves[j];
 
             if (isValidMove(startPoint, move))
             {
                 startPoint = makeAMove(startPoint, move);
-                fitness += 10;
+                fitness -= 200;
             }
             else
             {
@@ -245,25 +250,30 @@ void calculateFitness()
             }
         }
 
-        if (indiv.moves.empty())
+        if (population[i].moves.empty())
         {
             fitness = -fitnessConstant;
         }
 
         fitness -= mazeDists[startPoint.F][startPoint.S] * 1000;
-        indiv.fitness = fitness;
+        population[i].fitness = fitness;
+
+        if (bestIndiv.fitness < population[i].fitness)
+        {
+            bestIndiv = population[i];
+        }
     }
+    string fittestString(bestIndiv.moves.begin(), bestIndiv.moves.end());
+    cout << fittestString << endl;
+}
+bool mySort(const individual &a, const individual &b)
+{
+    return a.fitness > b.fitness;
 }
 
 void sortByFitness()
 {
-    reverse(population.begin(), population.end());
-}
-
-vector<char> getFittest()
-{
-    sortByFitness();
-    return population.front().moves;
+    sort(population.begin(), population.end(), mySort);
 }
 
 double doubleRand()
@@ -275,19 +285,14 @@ void mutation(individual &cromossome)
 {
     if (mutationChance > doubleRand() && !cromossome.moves.empty())
     {
-        if (doubleRand() > 0.6)
+        if (doubleRand() > 0.9)
         {
             int temp = randomRange(1, cromossome.moves.size() / 2);
             for (int i = 0; i < temp; i++)
             {
-                if (!cromossome.moves.empty())
+                if (cromossome.moves.size() < chromossomeSize)
                 {
-                    // coherentMoves[mommy.back()][randomRange(0, 2)]
                     cromossome.moves.push_back(coherentMoves[cromossome.moves.back()][randomRange(0, 2)]);
-                }
-                else
-                {
-                    cromossome.moves.push_back(directions[randomRange(0, 3)]);
                 }
             }
         }
@@ -329,85 +334,65 @@ vector<individual> crossover()
             int r2 = pairR.S;
             vector<char> daddy = population[(randomRange(l1, r1))].moves;
             vector<char> mommy = population[(randomRange(l2, r2))].moves;
-            
-            if (l1 == 0 && l2 != 0)
+
+            vector<char> first = mommy;
+            vector<char> second = daddy;
+
+            if (rand() % 1)
             {
-                for (int a = 0; a < chromossomeSize / 2; a++)
+                swap(mommy, daddy);
+            }
+
+            int crossoverPoint = randomRange(1, chromossomeSize);
+
+            for (int k = 0; k < crossoverPoint; k++)
+            {
+                if (k < first.size())
                 {
-                    if (a == 0)
+                    son.push_back(first[k]);
+                }
+                else
+                {
+                    crossoverPoint = k;
+                    break;
+                }
+            }
+
+            for (int k = crossoverPoint; k < chromossomeSize; k++)
+            {
+                if (k < second.size())
+                {
+                    if (k == crossoverPoint)
                     {
-                        daddy.push_back(directions[randomRange(0, 2)]);
+                        son.push_back(coherentMoves[son.back()][randomRange(0, 2)]);
                     }
                     else
                     {
-                        daddy.push_back(coherentMoves[daddy.back()][randomRange(0, 2)]);
+                        son.push_back(second[k]);
                     }
                 }
-                son = daddy;
-            }
-            else if (l2 == 0 && l1 != 0)
-            {
-                for (int a = 0; a < chromossomeSize / 2; a++)
+                else
                 {
-                    if (a == 0)
-                    {
-                        mommy.push_back(directions[randomRange(0, 2)]);
-                    }
-                    else
-                    {
-                        mommy.push_back(coherentMoves[mommy.back()][randomRange(0, 2)]);
-                    }
+                    break;
                 }
-                son = mommy;
             }
 
-            else
-            {
-                vector<char> first = mommy;
-                vector<char> second = daddy;
-
-                if (rand() % 1)
-                {
-                    swap(mommy, daddy);
-                }
-
-                int crossoverPoint = randomRange(1, chromossomeSize);
-
-                for (int k = 0; k < crossoverPoint; k++)
-                {
-                    if (k < first.size())
-                    {
-                        son.push_back(first.at(k));
-                    }
-                }
-
-                for (int k = crossoverPoint; k < chromossomeSize; k++)
-                {
-                    if (k < second.size())
-                    {
-                        if (k == crossoverPoint)
-                        {
-                            son.push_back(coherentMoves[son.back()][randomRange(0, 2)]);
-                        }
-                        else
-                        {
-                            son.push_back(second.at(k));
-                        }
-                    }
-                }
-            }
             string sonString(son.begin(), son.end());
             if (chromossomeSet.insert(sonString).S)
             {
                 sonIsValid = true;
             }
+            else
+            {
+                son.clear();
+            }
         }
-        individual newSon;
+
+        individual newSon = individual();
         newSon.moves = son;
         mutation(newSon);
         newPopulation.push_back(newSon);
     }
-
     return newPopulation;
 }
 
@@ -420,17 +405,20 @@ int main()
 {
     randomSeed();
     printf(
-"---------------------------------------------------------- \n\
+        "---------------------------------------------------------- \n\
 #################### - MAZER SOLVER - #################### \n\
----------------------------------------------------------- \n"
-            );
+---------------------------------------------------------- \n");
     cout << "Size of maze: ";
     cin >> mazeSize;
-    mazeSize = 2 * mazeSize + 1;
+    mazeSize = mazeSize;
     cout << endl;
     bool generate = true;
+
     do
-    { 
+    {
+        //Necessárpara não acabar com o cálculo de chromossomeSize ao refazer o labirinto.
+
+        numOfWalls = mazeSize * mazeSize;
         initVariables();
         mazeGenerator();
         drawMaze();
@@ -438,47 +426,41 @@ int main()
         string resposta;
         cin >> resposta;
         generate = (resposta == "y") ? true : false;
-    } while(generate);
-    
+    } while (generate);
+
     cout << "Size of population: ";
     cin >> populationSize;
     cout << endl;
-    
+
     initPopulation();
-    int generation = 0; 
+    int generation = 0;
     int fittestFitness = 0;
     vector<char> fittest;
 
-    int limitOfGenerations = 20000;
-/*
+    int limitOfGenerations = 1000;
+    /*
     cout << "Limit of Generations: ";
     cin >> limitOfGenerations;
     cout << endl;
     */
-    
-    int start_s=clock();
 
-    while(generation < limitOfGenerations){
+    int start_s = clock();
+    //fittestFitness < fitnessConstant + fitnessConstant / 100
+    while (generation < limitOfGenerations && !finished)
+    {
+        cout << generation << " ";
         calculateFitness();
-        fittest = getFittest();
-        fittestFitness = population.front().fitness;
-        
-        ///if fittestFitness > fitnessConstant : finalists.append(fittest);
-        ///print (len(finalists))
+        sortByFitness();
 
-        population = crossover();
-        
+        if (!finished)
+        {
+            population = crossover();
+        }
         generation += 1;
-
-        //Sleep(500);        
-        
-        string fittestString(fittest.begin(), fittest.end());     
-        cout << fittestString << endl;     
-        //system ("CLS"); 
     }
 
-    int stop_s=clock();
-    cout << "time: " << (stop_s-start_s)/double(CLOCKS_PER_SEC)*1000 << endl;
-   
+    int stop_s = clock();
+    cout << "time: " << (stop_s - start_s) / double(CLOCKS_PER_SEC) * 1000 << endl;
+
     return 0;
 }
