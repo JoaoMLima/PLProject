@@ -319,7 +319,7 @@ void mutation(individual &cromossome)
 {
     if (mutationChance > doubleRand() && !cromossome.moves.empty())
     {
-        if (doubleRand() > 0.9)
+        if (doubleRand() > 0.6)
         {
             int temp = randomRange(1, cromossome.moves.size() / 2);
             for (int i = 0; i < temp; i++)
