@@ -8,7 +8,19 @@
 #define S second
 using namespace std;
 typedef pair<pair<int, int>, pair<int, int>> pairOfPairs;
-typedef struct individual;
+//typedef struct individual;
+
+struct individual
+{
+    long long fitness;
+    vector<char> moves;
+    individual() { fitness = 0ll; }
+    bool operator<(individual other)
+    {
+        //Comparador utilizado no sort
+        return fitness > other.fitness;
+    }
+};
 
 /*
 ///////////////////////////////////////////////
@@ -39,18 +51,6 @@ bool finished = false;
 ///////////////////////////////////////////////
 Structs iniciais
 */
-
-struct individual
-{
-    long long fitness;
-    vector<char> moves;
-    individual() { fitness = 0ll; }
-    bool operator<(individual other)
-    {
-        //Comparador utilizado no sort
-        return fitness > other.fitness;
-    }
-};
 
 /*
 ///////////////////////////////////////////////
@@ -201,7 +201,7 @@ void drawMaze()
 
 void drawFittest(vector<char> fittest)
 {
-    this_thread::sleep_for(std::chrono::seconds(2));
+    this_thread::sleep_for(std::chrono::seconds(7));
     limparTela();
     pair<int, int> indi = spawn;
     for(int h = 0; h < fittest.size(); h++) {
@@ -214,7 +214,7 @@ void drawFittest(vector<char> fittest)
         if(maze[spawn.F][spawn.S] == ' '){
             maze[spawn.F][spawn.S] = 'S';
         }
-        this_thread::sleep_for(std::chrono::milliseconds(300));
+        this_thread::sleep_for(std::chrono::milliseconds(150));
         limparTela();
         if(indi == escape) {
             break;
@@ -226,6 +226,7 @@ void drawFittest(vector<char> fittest)
 
 void initPopulation()
 {
+    population.clear();
     for (int ind = 0; ind < populationSize; ind++)
     {
         population.push_back(individual());
@@ -271,7 +272,7 @@ void calculateFitness()
             }
             else
             {
-                fitness -= 200;
+                fitness -= 400;
             }
 
             if (!visited.insert(startPoint).S)
@@ -448,7 +449,12 @@ int main()
     printf( "###################################################################################################################\n\n");
     cout << "Size of maze: ";
     cin >> mazeSize;
-    mazeSize = mazeSize;
+    if (mazeSize <= 2) {
+        mazeSize = 3;
+    }
+    if (mazeSize % 2 == 0){
+        mazeSize += 1;
+    }
     cout << endl;
     bool generate = true;
 
@@ -468,7 +474,6 @@ int main()
 
     cout << "Size of population: ";
     cin >> populationSize;
-    cout << endl;
 
     initPopulation();
     int generation = 0;
@@ -476,11 +481,11 @@ int main()
     vector<char> fittest;
 
     int limitOfGenerations = 1000;
-    /*
+    
     cout << "Limit of Generations: ";
     cin >> limitOfGenerations;
     cout << endl;
-    */
+    
     int start_s = clock();
     //fittestFitness < fitnessConstant + fitnessConstant / 100
     while (generation < limitOfGenerations && !finished)
@@ -503,5 +508,36 @@ int main()
 
     cout << "Time to solve: " << (stop_s - start_s) / (double(CLOCKS_PER_SEC)) << endl;
 
+    cout << "Now see the dumb individual generation (press enter)" << endl;
+    getchar();
+    getchar();
+    
+    cout << "Random solution:" << endl;
+    int dumbGeneration = 0;
+    finished = false;
+    fittestFitness = 0;
+    while (dumbGeneration < generation && !finished)
+    {
+        initPopulation();
+        cout << dumbGeneration << " ";
+        calculateFitness();
+        sortByFitness();
+        if(population[0].fitness > fittestFitness) {
+            fittestFitness = population[0].fitness;
+            fittest = population[0].moves;
+        }
+        dumbGeneration++;
+    }
+    if (!finished) {
+        cout << "Maze not finished!" << endl;
+    } else {
+        cout << "Maze finished!" << endl;
+    }
+    string fittestString(fittest.begin(), fittest.end());
+    cout << "Best individual: "<< fittestString << endl;
+
+    drawFittest(fittest);
+    cout << "Press enter to exit" << endl;
+    getchar();
     return 0;
 }

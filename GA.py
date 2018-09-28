@@ -283,13 +283,13 @@ while generation < limitOfGenerations and len(finalists) < 5:
 
 	if fittestFitness > fitnessConstant:
 		finalists.append(fittest)
-	print (len(finalists))
+	#print (len(finalists))
 
 	population = crossOver()
 	
 	generation += 1
 	
-	print ('Solving','.'*(generation%5))
+	print 'Solving','.'*(generation%5)
 	sleep(0.5)
 	system('cls||clear')
 
