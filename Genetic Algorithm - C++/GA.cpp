@@ -1,8 +1,10 @@
 #include <bits/stdc++.h>
-//#include <windows.h>
+#include <windows.h>
 #include <unistd.h>
 #include <thread>
 #include <chrono>
+#include <MMsystem.h>
+#pragma comment(lib, "winmm.lib")
 #define put push_back
 #define F first
 #define S second
@@ -201,7 +203,11 @@ void drawMaze()
 
 void drawFittest(vector<char> fittest)
 {
-    this_thread::sleep_for(std::chrono::seconds(7));
+    #ifdef WIN32
+        Sleep(7000);
+    #else
+        this_thread::sleep_for(std::chrono::seconds(7));
+    #endif
     limparTela();
     pair<int, int> indi = spawn;
     for(int h = 0; h < fittest.size(); h++) {
@@ -214,7 +220,11 @@ void drawFittest(vector<char> fittest)
         if(maze[spawn.F][spawn.S] == ' '){
             maze[spawn.F][spawn.S] = 'S';
         }
-        this_thread::sleep_for(std::chrono::milliseconds(150));
+        #ifdef WIN32
+            Sleep(150);
+        #else
+            this_thread::sleep_for(std::chrono::milliseconds(150));
+        #endif
         limparTela();
         if(indi == escape) {
             break;
@@ -437,8 +447,8 @@ Metodo main
 
 int main()
 {
-    randomSeed();
     
+    randomSeed();
     printf( "###################################################################################################################\n");
     printf( ".___  ___.      ___      ________   _______         _______.  ______    __      ____    ____  _______ .______      \n");
     printf( "|   \\/   |     /   \\    |       /  |   ____|       /       | /  __  \\  |  |     \\   \\  /   / |   ____||   _  \\     \n");
@@ -447,6 +457,9 @@ int main()
     printf( "|  |  |  |  /  _____  \\   /  /----.|  |____    .----)   |   |  `--'  | |  `----.   \\    /    |  |____ |  |\\ \\----.\n");
     printf( "|__|  |__| /__/     \\__\\ /________||_______|   |_______/     \\______/  |_______|    \\__/     |_______|| _| `._____|\n\n");
     printf( "###################################################################################################################\n\n");
+    
+    PlaySound(TEXT("megalovania.wav"),NULL,SND_FILENAME | SND_ASYNC);
+    
     cout << "Size of maze: ";
     cin >> mazeSize;
     if (mazeSize <= 2) {
@@ -460,7 +473,7 @@ int main()
 
     do
     {
-        //Necessárpara não acabar com o cálculo de chromossomeSize ao refazer o labirinto.
+        //Necessário para não acabar com o cálculo de chromossomeSize ao refazer o labirinto.
 
         numOfWalls = mazeSize * mazeSize;
         initVariables();
