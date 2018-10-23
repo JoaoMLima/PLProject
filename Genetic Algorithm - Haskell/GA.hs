@@ -18,6 +18,12 @@ maze = [['#', '#', '#', '#', '#'],
 
 data Individuo = Individuo {fitness :: Integer, moves :: [Char]} deriving (Show)
 
+instance Eq Individuo where
+    (i1) == (i2) = fitness i1 == fitness i2
+
+instance Ord Individuo where
+    (i1) `compare` (i2) = fitness i1 `compare` fitness i2
+
 -- Funcoes de validacao.
 isValid :: (Int, Int) -> Bool
 isValid (a, b) = (0 <= a) && (a < mazeSize) && (0 <= b) && (b < mazeSize) 
