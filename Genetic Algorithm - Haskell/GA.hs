@@ -38,9 +38,8 @@ isValidMove :: (Int, Int) -> Bool
 isValidMove (x, y) = isValid (x, y) && not (isAWall (x, y))
 
 -- Funcoes de movimento
-getRandomInteger :: (Integer, Integer) -> Int
---getRandomInteger (a, b) = unsafePerformIO (randomRIO (a, b))
-getRandomInteger (a, b) = 3
+getRandomInteger :: (Int,Int) -> Int
+getRandomInteger (a,b) = unsafePerformIO(randomRIO (a,b))    
 
 sumVectors :: (Num a) => (a, a) -> (a, a) -> (a, a)  
 sumVectors (x1, y1) (x2, y2) = (x1 + x2, y1 + y2)
@@ -50,17 +49,18 @@ makeAMove (x, y) m =
     let move = getMove m
     in sumVectors (x, y) move
 
-randomMove :: Char
-randomMove
-    | num == 1 = 'U'
-    | num == 2 = 'D'
-    | num == 3 = 'L'
-    | num == 4 = 'R'
-    where
-        num = getRandomInteger(1, 4)
-    
+randomMove :: Int -> Char
+randomMove num 
+    | num == 0 = 'U'
+    | num == 1 = 'D'
+    | num == 2 = 'L'
+    | num == 3 = 'R'
+
+randomList :: Int -> [Int]
+randomList size = [getRandomInteger (0,3) | _ <- [1..size]]
+
 randomMoves :: Int -> [Char]
-randomMoves size = [randomMove | _ <- [1..size]]
+randomMoves n = map randomMove (randomList n)
 
 -- Funcoes auxiliares
 numOfWalls :: [[Char]] -> Int
@@ -81,6 +81,11 @@ buildIndividuo = newIndividuo
 
 initPopulation :: [Individuo]
 initPopulation = [ buildIndividuo | _ <- [1..populationSize]]
+
+-- Funcoes de impressao
+drawMaze :: [[Char]] -> IO ()
+drawMaze = putStrLn . unlines 
+
 
 -- Funcoes do algoritmo genetico
 calculateRecursive :: [Char] -> (Int, Int) -> Integer -> [(Int, Int)] -> Integer
