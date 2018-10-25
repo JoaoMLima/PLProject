@@ -35,7 +35,7 @@ import Data.List
 -- Variaveis iniciais
 populationSize = 40;
 chromossomeSize = mazeSize^2 - numOfWalls maze
-mutationChance = 30 --Porcentagem
+mutationChance = 40 --Porcentagem
 mazeSize = 5
 wallIcon = '#'
 spawn = (3,3)
@@ -45,6 +45,8 @@ maze = [['#', '#', '#', '#', '#'],
         ['#', ' ', '#', '#', '#'],
         ['#', ' ', ' ', 'S', '#'],
         ['#', '#', '#', '#', '#']]
+
+population = initPopulation
 
 data Individuo = Individuo {fitness :: Integer, moves :: [Char]} deriving (Show)
 
@@ -139,16 +141,15 @@ clearScreen = do
 -- Funcoes do algoritmo genetico
 mutation :: [Char] -> [Char]
 mutation individual
-    | prob <= mutationChance && prob <= mutationChance `div` 4  = moveFlip individual (getRandomInteger (1,individualSize-1)) 
-    | prob <= mutationChance && prob > mutationChance `div` 4 = moveAppend individual (getRandomInteger (1,individualSize `div` 2))
+    | prob <= mutationChance && prob <= mutationChance `div` 2  = moveFlip individual (getRandomInteger (1,individualSize-1)) 
+    | prob <= mutationChance && prob > mutationChance `div` 2 = moveAppend (reverse individual) (getRandomInteger (1,individualSize `div` 2))
     | otherwise = individual
     where prob = getRandomInteger (1,100)
           individualSize = length individual
 
------------------- INCOMPLETO
 moveAppend :: [Char] -> Int -> [Char]
-moveAppend _ 0 = [' ']
-moveAppend individual n = individual
+moveAppend individual 0 = reverse individual
+moveAppend (x:xs) n = moveAppend ((coherentMoves x) : x : xs) (n-1)
 
 moveFlip :: [Char] -> Int -> [Char]
 moveFlip individual rand = [moveFlipAux individual i rand | i <- [0..((length individual)-1)]] 
@@ -177,3 +178,64 @@ calculateFitnessIndividual ind = calculateRecursive (moves ind) spawn (fitness i
                 
 calculateFitness :: [Individuo] -> [Integer]
 calculateFitness xs = [calculateFitnessIndividual x | x <- xs]
+
+groupsChance = [0.5, 0.25, 0.15, 0.08 , 0.02]
+groupsArray = initGroupsChance
+
+-- INIT GROUP CHANCE
+initGroupsChance :: [Int]
+initGroupsChance =
+    initGroupsChance' groupsChance [] 1
+
+initGroupsChance' :: [Float] -> [Int] -> Int -> [Int]
+initGroupsChance' (chance:groupsChance) groupsArray n =
+    initGroupsChance' groupsChance ((replicate (round (chance * 100)) n) ++ groupsArray) (n+1)
+
+initGroupsChance' [] groupsArray _ = groupsArray
+
+----------------------------------------------
+----------------------------------------------
+----------------------------------------------
+----------------------------------------------
+-- falta colocar mutação aqui
+
+quartil = [round $ fromIntegral(populationSize) * 0.01, round $ fromIntegral(populationSize) * 0.25, round $ fromIntegral(populationSize) * 0.4, round $ fromIntegral(populationSize) * 0.75]
+groups = [(0, quartil !! 0), ((quartil !! 0) + 1, quartil !! 1), ((quartil !! 1) + 1, quartil !! 2), ((quartil !! 2) + 1, quartil !! 3), ((quartil !! 3) + 1, quartil !! 4)]
+
+crossover :: [Individuo] -> [String] -> Integer -> [Individuo]
+crossover newPopulation chromossomeSet n
+    | n < populationSize =
+        let newMoves = crossoverIndividuo
+        in if newMoves `elem` chromossomeSet
+            then crossover newPopulation chromossomeSet n 
+            else crossover ((Individuo 0 newMoves):newPopulation) (newMoves:chromossomeSet) (n+1)
+    | otherwise = newPopulation
+
+crossoverIndividuo =
+    let pairL = groups !! ((groupsArray !! getRandomInteger(0, 99)) - 1)
+        pairR = groups !! ((groupsArray !! getRandomInteger(0, 99)) - 1)
+        l1 = fst pairL
+        l2 = snd pairL
+        r1 = fst pairR
+        r2 = snd pairR
+        daddy = moves $ population !! getRandomInteger(l1, r1)
+        mommy = moves $ population !! getRandomInteger(l2, r2)
+        crossoverPoint = getRandomInteger(1, chromossomeSize)
+        halfSon = crossoverMommy 0 crossoverPoint mommy ""
+    in crossoverDaddy ((length halfSon) - 1) chromossomeSize daddy halfSon
+    --completedSon
+
+crossoverMommy :: Int -> Int -> String -> String -> String
+crossoverMommy _ _ [] son = son
+crossoverMommy n crossoverPoint (move:mommy) son
+    | n < crossoverPoint = crossoverMommy (n+1) crossoverPoint mommy (son ++ [move])
+    | otherwise = son
+
+-- n = length son
+
+crossoverDaddy :: Int -> Int -> String -> String -> String
+crossoverDaddy _ _ [] son = son
+crossoverDaddy n crossoverPoint (move:daddy) son
+    | n == crossoverPoint = crossoverDaddy (n+1) crossoverPoint daddy (son ++ [coherentMoves $ last son])
+    | n < chromossomeSize = crossoverDaddy (n+1) crossoverPoint daddy (son ++ [move])
+    | otherwise = son
