@@ -7,7 +7,7 @@ import Data.List
 -- Variaveis iniciais
 populationSize = 40;
 chromossomeSize = mazeSize^2 - numOfWalls maze
-mutationChance = 30 --Porcentagem
+mutationChance = 40 --Porcentagem
 mazeSize = 5
 wallIcon = '#'
 spawn = (3,3)
@@ -111,16 +111,15 @@ clearScreen = do
 -- Funcoes do algoritmo genetico
 mutation :: [Char] -> [Char]
 mutation individual
-    | prob <= mutationChance && prob <= mutationChance `div` 4  = moveFlip individual (getRandomInteger (1,individualSize-1)) 
-    | prob <= mutationChance && prob > mutationChance `div` 4 = moveAppend individual (getRandomInteger (1,individualSize `div` 2))
+    | prob <= mutationChance && prob <= mutationChance `div` 2  = moveFlip individual (getRandomInteger (1,individualSize-1)) 
+    | prob <= mutationChance && prob > mutationChance `div` 2 = moveAppend (reverse individual) (getRandomInteger (1,individualSize `div` 2))
     | otherwise = individual
     where prob = getRandomInteger (1,100)
           individualSize = length individual
 
------------------- INCOMPLETO
 moveAppend :: [Char] -> Int -> [Char]
-moveAppend _ 0 = [' ']
-moveAppend individual n = individual
+moveAppend individual 0 = reverse individual
+moveAppend (x:xs) n = moveAppend ((coherentMoves x) : x : xs) (n-1)
 
 moveFlip :: [Char] -> Int -> [Char]
 moveFlip individual rand = [moveFlipAux individual i rand | i <- [0..((length individual)-1)]] 
