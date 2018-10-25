@@ -1,3 +1,31 @@
+module GA (
+    isValid,
+    isAWall,
+    isExit,
+    isValidMove,
+    getRandomInteger,
+    sumVectors,
+    makeAMove,
+    randomMove,
+    randomList,
+    randomMoves,
+    numOfWalls,
+    coherentMoves,
+    buildIndividuo,
+    initPopulation,
+    drawMaze,
+    drawFittest,
+    drawFittestAux,
+    clearScreen,
+    mutation,
+    moveAppend,
+    moveFlip,
+    moveFlipAux,
+    calculateRecursive,
+    calculateFitnessIndividual,
+    calculateFitness
+) where 
+
 -- Generate a random number given a range.
 import System.Process as SP
 import System.IO.Unsafe
