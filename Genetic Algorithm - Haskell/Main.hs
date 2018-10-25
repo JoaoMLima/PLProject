@@ -36,23 +36,30 @@ main = do
     putStrLn "Size of Population: "
     populationSize <- readLn :: IO Int
 
-    let population = initPopulation
-    print "2"
+    let oPai = generations initPopulation
+    print ""
 
 limitOfGenerations = 1000
 
-generations :: Int -> Bool -> Bool
-generations 1000 _ = False
-generations gen _ = do
+generations :: Int -> [Individuo] -> [Individuo]
+generations 1000 _ = []
+generations gen population = do
     putStr (show gen ++ " ")
-    let sortedNewPopulation = sortByfitness (calculateFitness population)
-    let individualsWhoFinished = finished sortedNewPopulation
-    
+    let sortedNewPopulation = sortByFitness (calculateFitness population)
+    let finished = isFinished sortedNewPopulation
+    if finished
+        then return [head sortedNewPopulation]
+        else generations (gen + 1) crossover (sortedNewPopulation)
 
-finished :: [Individuo] -> [Individuo]
-finished [] [] = []
-finished (ind:inds) | (getFitness ind) > 10^8 = [ind] ++ finished inds
-                    | otherwise = finished inds
+-- [moves idv | idv <- sort $ population]
+
+
+
+isFinished :: [Individuo] -> Bool
+isFinished [] = False
+isFinished (ind:inds) | getFitness ind > 10^8 = True
+                      | otherwise = False
+
 
 getFitness :: Individuo -> Integer
 getFitness (Individuo fitness _) = fitness
