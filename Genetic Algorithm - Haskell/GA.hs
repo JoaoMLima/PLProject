@@ -7,6 +7,7 @@ import Data.List
 -- Variaveis iniciais
 populationSize = 40;
 chromossomeSize = mazeSize^2 - numOfWalls maze
+mutationChance = 30 --Porcentagem
 mazeSize = 5
 wallIcon = '#'
 spawn = (3,3)
@@ -67,6 +68,13 @@ randomMoves n = map randomMove (randomList n)
 numOfWalls :: [[Char]] -> Int
 numOfWalls xxs = sum [sum [1 | x <- xs, x == wallIcon ]| xs <- xxs]
 
+coherentMoves :: Char -> Char
+coherentMoves move
+        | move == 'D' = ['D','R','L'] !! (getRandomInteger (0,2))
+        | move == 'U' = ['U','R','L'] !! (getRandomInteger (0,2))
+        | move == 'R' = ['R','D','U'] !! (getRandomInteger (0,2))
+        | move == 'L' = ['L','D','U'] !! (getRandomInteger (0,2))
+
 getMove 'U' = (-1, 0)
 getMove 'D' = (1, 0)
 getMove 'L' = (0, -1)
@@ -101,10 +109,29 @@ clearScreen = do
     return ()
 
 -- Funcoes do algoritmo genetico
-calculateRecursive :: [Char] -> (Int, Int) -> Integer -> [(Int, Int)] -> Integer
+mutation :: [Char] -> [Char]
+mutation individual
+    | prob <= mutationChance && prob <= mutationChance `div` 4  = moveFlip individual (getRandomInteger (1,individualSize-1)) 
+    | prob <= mutationChance && prob > mutationChance `div` 4 = moveAppend individual (getRandomInteger (1,individualSize `div` 2))
+    | otherwise = individual
+    where prob = getRandomInteger (1,100)
+          individualSize = length individual
 
+------------------ INCOMPLETO
+moveAppend :: [Char] -> Int -> [Char]
+moveAppend _ 0 = [' ']
+moveAppend individual n = individual
+
+moveFlip :: [Char] -> Int -> [Char]
+moveFlip individual rand = [moveFlipAux individual i rand | i <- [0..((length individual)-1)]] 
+
+moveFlipAux :: [Char] -> Int -> Int -> Char
+moveFlipAux individual x target
+        | x == target = coherentMoves (individual !! x)
+        | x /= target = individual !! x
+
+calculateRecursive :: [Char] -> (Int, Int) -> Integer -> [(Int, Int)] -> Integer
 calculateRecursive [] _ f _ = f
-        
 calculateRecursive (m:ms) (x, y) f visited = 
         let newPos = makeAMove (x, y) m
         in if isExit newPos
