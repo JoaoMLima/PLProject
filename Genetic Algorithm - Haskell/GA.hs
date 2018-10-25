@@ -1,4 +1,5 @@
 -- Generate a random number given a range.
+import System.Process as SP
 import System.IO.Unsafe
 import System.Random
 import Data.List
@@ -86,6 +87,18 @@ initPopulation = [ buildIndividuo | _ <- [1..populationSize]]
 drawMaze :: [[Char]] -> IO ()
 drawMaze = putStrLn . unlines 
 
+drawFittest :: [[Char]] -> (Int,Int) -> Int -> [[Char]]
+drawFittest maze (x,y) size = [[drawFittestAux maze (x,y) (j,i) | i <- [0..size-1]] | j <- [0..size-1]]
+
+drawFittestAux :: [[Char]] -> (Int,Int) -> (Int,Int) -> Char
+drawFittestAux maze (x,y) (i,j)
+    |x == i && y == j = '*'
+    |x /= i || y /= j = (maze !! i) !! j
+
+clearScreen :: IO ()
+clearScreen = do
+    SP.system "clear"
+    return ()
 
 -- Funcoes do algoritmo genetico
 calculateRecursive :: [Char] -> (Int, Int) -> Integer -> [(Int, Int)] -> Integer
