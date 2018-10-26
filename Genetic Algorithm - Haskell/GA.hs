@@ -156,29 +156,32 @@ calculateFitness :: [Individuo] -> (([[Char]], [[Int]]),((Int, Int), (Int, Int))
 calculateFitness xs tuple = [Individuo (calculateFitnessIndividual x tuple) (moves x) | x <- xs]
 
 groupsChance = [0.5, 0.25, 0.15, 0.08 , 0.02]
-groupsArray = initGroupsChance
+groupsArray = initGroupsArray
+groups = [(0, 10), (11, 250), (251, 400), (401, 750), (751, 1000)]
+
 
 -- INIT GROUP CHANCE
-initGroupsChance :: [Int]
-initGroupsChance =
-    initGroupsChance' groupsChance [] 1
+initGroupsArray :: [Int]
+initGroupsArray =
+    initGroupsArray' groupsChance [] 1
 
-initGroupsChance' :: [Float] -> [Int] -> Int -> [Int]
-initGroupsChance' (chance:groupsChance) groupsArray n =
-    initGroupsChance' groupsChance ((replicate (round (chance * 100)) n) ++ groupsArray) (n+1)
+initGroupsArray' :: [Float] -> [Int] -> Int -> [Int]
+initGroupsArray' (chance:groupsChance) groupsArray n =
+    initGroupsArray' groupsChance ((replicate (round (chance * 100)) n) ++ groupsArray) (n+1)
 
-initGroupsChance' [] groupsArray _ = groupsArray
+initGroupsArray' [] groupsArray _ = groupsArray
 
+{-
 quartil = [round $ fromIntegral(populationSize) * 0.01, round $ fromIntegral(populationSize) * 0.25, round $ fromIntegral(populationSize) * 0.4, round $ fromIntegral(populationSize) * 0.75]
 groups = [(0, quartil !! 0), ((quartil !! 0) + 1, quartil !! 1), ((quartil !! 1) + 1, quartil !! 2), ((quartil !! 2) + 1, quartil !! 3), ((quartil !! 3) + 1, quartil !! 4)]
-
+-}
 crossover :: [Individuo] -> [Individuo] -> [String] -> Int -> Int -> [Individuo]
 crossover population newPopulation chromossomeSet n chromossomeSize
     | n < populationSize =
         let newMoves = crossoverIndividuo population chromossomeSize
-        in if newMoves `elem` chromossomeSet
-            then crossover population newPopulation chromossomeSet n chromossomeSize 
-            else crossover population ((Individuo (10^6) (mutation newMoves)):newPopulation) (newMoves:chromossomeSet) (n+1) chromossomeSize
+        --in if newMoves `elem` chromossomeSet
+            --then crossover population newPopulation chromossomeSet n chromossomeSize 
+        in crossover population ((Individuo (10^6) (mutation newMoves)):newPopulation) (newMoves:chromossomeSet) (n+1) chromossomeSize
     | otherwise = newPopulation
 
 crossoverIndividuo :: [Individuo] -> Int -> String
@@ -192,10 +195,7 @@ crossoverIndividuo population chromossomeSize =
         daddy = moves $ population !! getRandomInteger(l1, r1)
         mommy = moves $ population !! getRandomInteger(l2, r2)
         crossoverPoint = getRandomInteger(1, chromossomeSize)
-        --halfSon = crossoverMommy 0 crossoverPoint mommy ""
-    in -- crossoverDaddy ((length halfSon) - 1) chromossomeSize daddy halfSon
-        crossoverParents crossoverPoint mommy daddy chromossomeSize
-    --completedSon
+    in crossoverParents crossoverPoint mommy daddy chromossomeSize
 
 crossoverParents :: Int -> [Char] -> [Char] -> Int -> [Char]
 crossoverParents crossoverPoint mommy daddy chromossomeSize = 
@@ -206,6 +206,7 @@ crossoverParents crossoverPoint mommy daddy chromossomeSize =
         (True, False) -> [mommy !! x | x <- [0..(crossoverPoint - 1)]] ++ [if y == crossoverPoint then coherentMoves $  mommy !! (crossoverPoint - 1) else daddy !! y | y <- [crossoverPoint..(chromossomeSize-1)]]
         (False, True) -> [mommy !! x | x <- [0..(length mommy - 1)]] ++ [if y == crossoverPoint then coherentMoves $ (last mommy) else daddy !! y | y <- [crossoverPoint..(length daddy - 1)]]
         (False, False) -> [mommy !! x | x <- [0..(length mommy - 1)]] ++ [if y == crossoverPoint then coherentMoves $  mommy !! (crossoverPoint - 1) else daddy !! y | y <- [crossoverPoint..(chromossomeSize-1)]]
+
 
 {-
 crossoverMommy crossoverPoint mommy

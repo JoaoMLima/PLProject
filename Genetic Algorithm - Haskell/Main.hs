@@ -100,8 +100,6 @@ checkFinished (ind:inds)
     | (fitness ind) > (10^8) = True
     | otherwise = False
 
-                          
-
 -- Gera e printa maze
 generateMaze :: Int -> IO (([[Char]], [[Int]]),((Int, Int), (Int, Int)))
 generateMaze mazeSize = do
