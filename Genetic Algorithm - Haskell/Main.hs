@@ -50,7 +50,7 @@ main = do
 
 -- GERAÇÃO BURRAAAAA
 dumbGeneration :: Int -> [Individuo] -> (([[Char]], [[Int]]),((Int, Int), (Int, Int))) -> Int -> IO()
-dumbGeneration 50 population mazeTuple _ = showSolution (moves (head population)) (getSpawn mazeTuple) (getMaze mazeTuple)
+dumbGeneration 10 population mazeTuple _ = showSolution (moves (head population)) (getSpawn mazeTuple) (getMaze mazeTuple)
 dumbGeneration gen population mazeTuple chromossomeSize = do
     let sortedNewPopulation = sort (calculateFitness population mazeTuple)
     putStr (show gen ++ " " ++ unlines [moves (head sortedNewPopulation)])
