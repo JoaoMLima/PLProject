@@ -1,4 +1,5 @@
 import GA
+import System.IO.Unsafe
 
 -- Tamanho do filho é determinado pelo chromossomeSize e o tamanho dos pais
 ind1 = Individuo (10^6) "LDDRULUR"
@@ -10,16 +11,19 @@ ind2 = Individuo (10^6) "DUURRLUU"
 
 -- crossover _ newPopulation _ populationSize _ =  
 
-crossoverTest :: [Individuo] -> [Individuo] -> Int -> Int -> [Individuo]
-crossoverTest population newPopulation n chromossomeSize
+crossoverTest :: [Individuo] -> [Individuo] -> Int -> [Individuo]
+crossoverTest population newPopulation n
     | n < populationSize =
-        let newMoves = crossoverIndividuoTest population chromossomeSize 
-        in crossoverTest population ((Individuo (10^6) (mutation newMoves)):newPopulation) (n+1) chromossomeSize
+        let newMoves = crossoverIndividuoTest population
+        in crossoverTest population ((Individuo (10^6) (mutation newMoves)):newPopulation) (n+1)
     | otherwise = newPopulation
 
+{-
 crossoverIndividuoTest :: [Individuo] -> Int -> [Char]
 crossoverIndividuoTest population chromossomeSize =
-    let pairL = groups !! ((groupsArray !! getRandomInteger(0, 99)) - 1)
+    crossoverParentsTest crossoverPoint mommy daddy chromossomeSize
+    where
+        pairL = groups !! ((groupsArray !! getRandomInteger(0, 99)) - 1)
         pairR = groups !! ((groupsArray !! getRandomInteger(0, 99)) - 1)
         l1 = fst pairL
         l2 = snd pairL
@@ -28,8 +32,27 @@ crossoverIndividuoTest population chromossomeSize =
         daddy = moves $ population !! getRandomInteger(l1, l2)
         mommy = moves $ population !! getRandomInteger(r1, r2)
         crossoverPoint = getRandomInteger(1, chromossomeSize)
-    in crossoverParentsTest crossoverPoint mommy daddy chromossomeSize
+-}
 
+crossoverIndividuoTest :: [Individuo] -> [Char]
+crossoverIndividuoTest population =
+    let pairL = (groups !! ((groupsArray !! 90) - 1))
+        pairR = (groups !! ((groupsArray !! 45) - 1))
+        l1 = fst pairL
+        l2 = snd pairL
+        r1 = fst pairR
+        r2 = snd pairR
+        daddy = moves (population !! getRandomInteger(l1, l2))
+        mommy = moves (population !! getRandomInteger(r1, r2))
+    in newCrossoverParents mommy daddy
+
+half :: Int -> Int
+half x = round $ fromIntegral(x) / 2
+
+newCrossoverParents :: [Char] -> [Char] -> [Char]
+newCrossoverParents mommy daddy = [mommy !! x | x <- [0..half (length mommy)]] ++ [daddy !! y | y <- [(half (length mommy) + 1)..((length daddy)-1)]]
+
+{-
 crossoverParentsTest :: Int -> [Char] -> [Char] -> Int -> [Char]
 crossoverParentsTest crossoverPoint mommy daddy chromossomeSize = 
     let pointLessThanMommy = crossoverPoint < length mommy
@@ -39,19 +62,18 @@ crossoverParentsTest crossoverPoint mommy daddy chromossomeSize =
         (True, False) -> [mommy !! x | x <- [0..(crossoverPoint - 1)]] ++ [if y == crossoverPoint then coherentMoves $  mommy !! (crossoverPoint - 1) else daddy !! y | y <- [crossoverPoint..(chromossomeSize-1)]]
         (False, True) -> [mommy !! x | x <- [0..(length mommy - 1)]] ++ [if y == crossoverPoint then coherentMoves $ (last mommy) else daddy !! y | y <- [crossoverPoint..(length daddy - 1)]]
         (False, False) -> [mommy !! x | x <- [0..(length mommy - 1)]] ++ [if y == crossoverPoint then coherentMoves $  mommy !! (crossoverPoint - 1) else daddy !! y | y <- [crossoverPoint..(chromossomeSize-1)]]
+-}
 
 jumpOfCat :: [Individuo] -> [Individuo] -> Int -> [Individuo]
 jumpOfCat population newPopulation chromossomeSize = 
-    let newMoves = crossoverIndividuoTest population chromossomeSize
+    let newMoves = crossoverIndividuoTest population
     in (Individuo (10^6) newMoves):newPopulation
 
 main = do
     let mommy = moves ind1
     let daddy = moves ind2
-
-    putStrLn (crossoverIndividuoTest (initPopulation 5) 5)
+    putStrLn newCrossoverParents mommy daddy
+    putStrLn (crossoverIndividuoTest (initPopulation 20))
     --print $ jumpOfCat myPopulation [] 5
     -- let myCross = jumpOfCat (initPopulation 5) [] 5
     -- OUTPUT: LDD_RLUU
-    putStrLn $ crossoverParentsTest 3 mommy daddy 8
-    putStrLn $ crossoverParentsTest 10 "DUURLRUDLR" "L" 10

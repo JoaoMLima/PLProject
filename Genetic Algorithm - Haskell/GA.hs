@@ -49,7 +49,7 @@ isValidMove (x, y) m = (isValid (x, y) m) && not (isAWall (x, y) m)
 
 -- Funcoes de movimento
 getRandomInteger :: (Int,Int) -> Int
-getRandomInteger (a,b) = unsafePerformIO(randomRIO (a,b))    
+getRandomInteger (a,b) = unsafePerformIO (randomRIO (a,b))
 
 sumVectors :: (Num a) => (a, a) -> (a, a) -> (a, a)  
 sumVectors (x1, y1) (x2, y2) = (x1 + x2, y1 + y2)
