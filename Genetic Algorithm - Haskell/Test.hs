@@ -50,7 +50,7 @@ half :: Int -> Int
 half x = round $ fromIntegral(x) / 2
 
 newCrossoverParents :: [Char] -> [Char] -> [Char]
-newCrossoverParents mommy daddy = [mommy !! x | x <- [0..half (length mommy)]] ++ [daddy !! y | y <- [(half (length mommy) + 1)..((length daddy)-1)]]
+newCrossoverParents mommy daddy = [mommy !! x | x <- [0..half ((length mommy) - 1)]] ++ [daddy !! y | y <- [(half (length mommy) + 1)..((length daddy)-1)]]
 
 {-
 crossoverParentsTest :: Int -> [Char] -> [Char] -> Int -> [Char]
@@ -72,8 +72,9 @@ jumpOfCat population newPopulation chromossomeSize =
 main = do
     let mommy = moves ind1
     let daddy = moves ind2
-    putStrLn newCrossoverParents mommy daddy
-    putStrLn (crossoverIndividuoTest (initPopulation 20))
+    putStrLn mommy
+    putStrLn daddy
+    putStrLn $ newCrossoverParents mommy daddy
     --print $ jumpOfCat myPopulation [] 5
     -- let myCross = jumpOfCat (initPopulation 5) [] 5
     -- OUTPUT: LDD_RLUU
