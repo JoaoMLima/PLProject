@@ -7,7 +7,7 @@ import System.Random
 import Data.List
 
 -- Variaveis iniciais
-mutationChance = 40 --Porcentagem
+mutationChance = 50 --Porcentagem
 wallIcon = '#'
 populationSize = 1000
 --spawn = (3,3)
@@ -116,7 +116,7 @@ drawFittestAux maze (x,y) (i,j)
 -- Funcoes do algoritmo genetico
 mutation :: [Char] -> [Char]
 mutation individual
-    | prob <= mutationChance && prob <= mutationChance `div` 2  = moveFlip individual (getRandomInteger (1,individualSize-1)) 
+    | prob <= mutationChance && prob <= mutationChance `div` 2  = moveFlip individual (getRandomInteger (1,half(half individualSize)))
     | prob <= mutationChance && prob > mutationChance `div` 2 = moveAppend (reverse individual) (getRandomInteger (1,individualSize `div` 2))
     | otherwise = individual
     where prob = getRandomInteger (1,100)
@@ -127,7 +127,8 @@ moveAppend individual 0 = reverse individual
 moveAppend (x:xs) n = moveAppend ((coherentMoves x) : x : xs) (n-1)
 
 moveFlip :: [Char] -> Int -> [Char]
-moveFlip individual rand = [moveFlipAux individual i rand | i <- [0..((length individual)-1)]] 
+moveFlip individual n  | n == 0 = individual
+                        | otherwise = moveFlip [moveFlipAux individual i (getRandomInteger (0,(length individual) -1)) | i <- [0..((length individual)-1)]] (n-1)
 
 moveFlipAux :: [Char] -> Int -> Int -> Char
 moveFlipAux individual x target
@@ -136,7 +137,7 @@ moveFlipAux individual x target
 
 calculateRecursive :: [Char] -> (([[Char]], [[Int]]),((Int, Int), (Int, Int))) -> Int -> [(Int, Int)] -> Int
 calculateRecursive [] ((maze, mazeDists), (position,exit)) f visited = 
-    f - (((mazeDists !! (fst position)) !! (snd position)) * 1000)
+    f - (((mazeDists !! (fst position)) !! (snd position)) * 10000)
 calculateRecursive (m:ms) ((maze, mazeDists), (position,exit)) f visited = 
         let newPos = makeAMove position m
         in if isExit newPos maze
@@ -184,19 +185,32 @@ crossover population newPopulation chromossomeSet n chromossomeSize
         in crossover population ((Individuo (10^6) (mutation newMoves)):newPopulation) (newMoves:chromossomeSet) (n+1) chromossomeSize
     | otherwise = newPopulation
 
-crossoverIndividuo :: [Individuo] -> Int -> String
+
+
+crossoverIndividuo :: [Individuo] -> Int -> [Char]
 crossoverIndividuo population chromossomeSize =
-    let pairL = groups !! ((groupsArray !! getRandomInteger(0, 99)) - 1)
-        pairR = groups !! ((groupsArray !! getRandomInteger(0, 99)) - 1)
+    let pairL = (groups !! ((groupsArray !! 90) - 1))
+        pairR = (groups !! ((groupsArray !! 45) - 1))
         l1 = fst pairL
         l2 = snd pairL
         r1 = fst pairR
         r2 = snd pairR
-        daddy = moves $ population !! getRandomInteger(l1, r1)
-        mommy = moves $ population !! getRandomInteger(l2, r2)
-        crossoverPoint = getRandomInteger(1, chromossomeSize)
-    in crossoverParents crossoverPoint mommy daddy chromossomeSize
+        daddy = moves (population !! getRandomInteger(l1, l2))
+        mommy = moves (population !! getRandomInteger(r1, r2))
+    in crossoverParents mommy daddy chromossomeSize
 
+half :: Int -> Int
+half x = floor $ fromIntegral(x) / 2
+
+crossoverParents :: [Char] -> [Char] -> Int -> [Char]
+crossoverParents mommy daddy chromossomeSize = 
+    let halfMommy = [mommy !! x | x <- [0..half((length mommy) - 1)]]
+        halfDaddy = [daddy !! y | y <- [(half (length mommy))..((length daddy)-1)]]
+        son = halfMommy ++ halfDaddy
+    in [son !! x | x <- [0..(chromossomeSize - 1)]]
+
+
+{-
 crossoverParents :: Int -> [Char] -> [Char] -> Int -> [Char]
 crossoverParents crossoverPoint mommy daddy chromossomeSize = 
     let pointLessThanMommy = crossoverPoint < length mommy
@@ -207,6 +221,7 @@ crossoverParents crossoverPoint mommy daddy chromossomeSize =
         (False, True) -> [mommy !! x | x <- [0..(length mommy - 1)]] ++ [if y == crossoverPoint then coherentMoves $ (last mommy) else daddy !! y | y <- [crossoverPoint..(length daddy - 1)]]
         (False, False) -> [mommy !! x | x <- [0..(length mommy - 1)]] ++ [if y == crossoverPoint then coherentMoves $  mommy !! (crossoverPoint - 1) else daddy !! y | y <- [crossoverPoint..(chromossomeSize-1)]]
 
+-}
 
 {-
 crossoverMommy crossoverPoint mommy

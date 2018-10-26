@@ -22,6 +22,7 @@ clearScreen = do
     return ()
 
 main = do
+    clearScreen
     display
     putStr "Size of maze: "
     input <- readLn :: IO Int
@@ -32,7 +33,7 @@ main = do
     let mazeDist = getmazeDists mazeTuple
     let spawn = getSpawn mazeTuple
 
-    let chromossomeSize = (mazeSize^2) - numOfWalls maze
+    let chromossomeSize = ((mazeSize^2) - numOfWalls maze)*2
     
     --putStrLn "Size of Population: "
     --let populationSize <- readLn :: IO Int
@@ -40,22 +41,24 @@ main = do
     generations 0 (initPopulation chromossomeSize) mazeTuple chromossomeSize
 
     threadDelay 3000000
+    clearScreen
+
+    putStrLn "And now watch the dumb algorithm" 
 
     dumbGeneration 0 (initPopulation chromossomeSize) mazeTuple chromossomeSize
 
 
 -- GERAÇÃO BURRAAAAA
 dumbGeneration :: Int -> [Individuo] -> (([[Char]], [[Int]]),((Int, Int), (Int, Int))) -> Int -> IO()
-dumbGeneration 100 population mazeTuple _ = showSolution (moves (head population)) (getSpawn mazeTuple) (getMaze mazeTuple)
+dumbGeneration 50 population mazeTuple _ = showSolution (moves (head population)) (getSpawn mazeTuple) (getMaze mazeTuple)
 dumbGeneration gen population mazeTuple chromossomeSize = do
-    putStr "And now watch the dumb algorithm"
-    threadDelay 3000000
-    clearScreen
     let sortedNewPopulation = sort (calculateFitness population mazeTuple)
     putStr (show gen ++ " " ++ unlines [moves (head sortedNewPopulation)])
     let finished = checkFinished sortedNewPopulation
     if finished
-        then showSolution (moves (head sortedNewPopulation)) (getSpawn mazeTuple) (getMaze mazeTuple)
+        then do
+            threadDelay 100000
+            showSolution (moves (head sortedNewPopulation)) (getSpawn mazeTuple) (getMaze mazeTuple)
         else dumbGeneration (gen+1) (initPopulation chromossomeSize) mazeTuple chromossomeSize
  
 -- Vai printando os passos do melhor individuo
@@ -63,11 +66,14 @@ showSolution :: [Char] -> (Int,Int) -> [[Char]] -> IO()
 showSolution [] (x,y) maze = putStrLn (drawMaze $ drawFittest maze (x,y) (length maze))
 showSolution (mv:steps) (x,y) maze = do
     putStrLn (drawMaze $ drawFittest maze (x,y) (length maze))
-    let newPosition = makeAMove (x,y) mv
-    threadDelay 300000
-    clearScreen
-    if isValidMove newPosition maze
-        then showSolution steps newPosition maze
+    if (isExit (x, y) maze)
+        then do putStr ""
+    else do
+        let newPosition = makeAMove (x,y) mv
+        threadDelay 100000
+        clearScreen
+        if isValidMove newPosition maze
+            then showSolution steps newPosition maze
         else showSolution steps (x,y) maze 
 
 
