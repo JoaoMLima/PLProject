@@ -33,7 +33,7 @@ import System.Random
 import Data.List
 
 -- Variaveis iniciais
-populationSize = 40;
+populationSize;
 chromossomeSize = mazeSize^2 - numOfWalls maze
 mutationChance = 40 --Porcentagem
 mazeSize = 5
@@ -46,7 +46,13 @@ maze = [['#', '#', '#', '#', '#'],
         ['#', ' ', ' ', 'S', '#'],
         ['#', '#', '#', '#', '#']]
 
-population = initPopulation
+mazeDists = [[-1,-1,-1,-1,-1],
+             [-1,3,2,1,0],
+             [-1,4,-1,-1,-1],
+             [-1,5,6,7,-1],
+             [-1,-1,-1,-1,-1]]
+
+--population = initPopulation
 
 data Individuo = Individuo {fitness :: Integer, moves :: [Char]} deriving (Show)
 
@@ -54,7 +60,7 @@ instance Eq Individuo where
     (i1) == (i2) = fitness i1 == fitness i2
 
 instance Ord Individuo where
-    (i1) `compare` (i2) = fitness i1 `compare` fitness i2
+    (i1) `compare` (i2) = fitness i2 `compare` fitness i1
 
 -- Funcoes de validacao.
 isValid :: (Int, Int) -> Bool
@@ -192,12 +198,6 @@ initGroupsChance' (chance:groupsChance) groupsArray n =
     initGroupsChance' groupsChance ((replicate (round (chance * 100)) n) ++ groupsArray) (n+1)
 
 initGroupsChance' [] groupsArray _ = groupsArray
-
-----------------------------------------------
-----------------------------------------------
-----------------------------------------------
-----------------------------------------------
--- falta colocar mutação aqui
 
 quartil = [round $ fromIntegral(populationSize) * 0.01, round $ fromIntegral(populationSize) * 0.25, round $ fromIntegral(populationSize) * 0.4, round $ fromIntegral(populationSize) * 0.75]
 groups = [(0, quartil !! 0), ((quartil !! 0) + 1, quartil !! 1), ((quartil !! 1) + 1, quartil !! 2), ((quartil !! 2) + 1, quartil !! 3), ((quartil !! 3) + 1, quartil !! 4)]
