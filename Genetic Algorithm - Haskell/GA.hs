@@ -197,7 +197,7 @@ crossoverIndividuo population chromossomeSize =
         crossoverParents crossoverPoint mommy daddy chromossomeSize
     --completedSon
 
-
+crossoverParents :: Int -> [Char] -> [Char] -> Int -> [Char]
 crossoverParents crossoverPoint mommy daddy chromossomeSize = 
     let pointLessThanMommy = crossoverPoint < length mommy
         pointLessThanDaddy = length daddy <= chromossomeSize    
