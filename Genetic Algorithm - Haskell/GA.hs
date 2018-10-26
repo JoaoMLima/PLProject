@@ -1,30 +1,4 @@
-module GA (
-    isValid,
-    isAWall,
-    isExit,
-    isValidMove,
-    getRandomInteger,
-    sumVectors,
-    makeAMove,
-    randomMove,
-    randomList,
-    randomMoves,
-    numOfWalls,
-    coherentMoves,
-    buildIndividuo,
-    initPopulation,
-    drawMaze,
-    drawFittest,
-    drawFittestAux,
-    clearScreen,
-    mutation,
-    moveAppend,
-    moveFlip,
-    moveFlipAux,
-    calculateRecursive,
-    calculateFitnessIndividual,
-    calculateFitness
-) where 
+module GA where 
 
 -- Generate a random number given a range.
 import System.Process as SP
@@ -33,28 +7,26 @@ import System.Random
 import Data.List
 
 -- Variaveis iniciais
-populationSize;
-chromossomeSize = mazeSize^2 - numOfWalls maze
 mutationChance = 40 --Porcentagem
-mazeSize = 5
 wallIcon = '#'
-spawn = (3,3)
-exit = (4,1)
-maze = [['#', '#', '#', '#', '#'],
-        ['#', ' ', ' ', ' ', 'E'],
-        ['#', ' ', '#', '#', '#'],
-        ['#', ' ', ' ', 'S', '#'],
-        ['#', '#', '#', '#', '#']]
+populationSize = 1000
+--spawn = (3,3)
+--exit = (4,1)
+--maze = [['#', '#', '#', '#', '#'],
+--        ['#', ' ', ' ', ' ', 'E'],
+--        ['#', ' ', '#', '#', '#'],
+--        ['#', ' ', ' ', 'S', '#'],
+--        ['#', '#', '#', '#', '#']]
 
-mazeDists = [[-1,-1,-1,-1,-1],
-             [-1,3,2,1,0],
-             [-1,4,-1,-1,-1],
-             [-1,5,6,7,-1],
-             [-1,-1,-1,-1,-1]]
+--mazeDists = [[-1,-1,-1,-1,-1],
+--             [-1,3,2,1,0],
+--             [-1,4,-1,-1,-1],
+--            [-1,5,6,7,-1],
+--             [-1,-1,-1,-1,-1]]
 
 --population = initPopulation
 
-data Individuo = Individuo {fitness :: Integer, moves :: [Char]} deriving (Show)
+data Individuo = Individuo {fitness :: Int, moves :: [Char]} deriving (Show)
 
 instance Eq Individuo where
     (i1) == (i2) = fitness i1 == fitness i2
@@ -63,17 +35,17 @@ instance Ord Individuo where
     (i1) `compare` (i2) = fitness i2 `compare` fitness i1
 
 -- Funcoes de validacao.
-isValid :: (Int, Int) -> Bool
-isValid (a, b) = (0 <= a) && (a < mazeSize) && (0 <= b) && (b < mazeSize) 
+isValid :: (Int, Int) -> [[Char]] -> Bool
+isValid (a, b) m = (0 <= a) && (a < length m) && (0 <= b) && (b < length m) 
 
-isAWall :: (Int, Int) -> Bool
-isAWall (a, b) = (maze !! a) !! b == wallIcon
+isAWall :: (Int, Int) -> [[Char]] -> Bool
+isAWall (a, b) m = (m !! a) !! b == wallIcon
 
-isExit :: (Int, Int) -> Bool
-isExit (a, b) = isValid (a, b) && (maze !! a) !! b == 'E'
+isExit :: (Int, Int) -> [[Char]] -> Bool
+isExit (a, b) m = (isValid (a, b) m) && (m !! a) !! b == 'E'
 
-isValidMove :: (Int, Int) -> Bool
-isValidMove (x, y) = isValid (x, y) && not (isAWall (x, y))
+isValidMove :: (Int, Int) -> [[Char]] -> Bool
+isValidMove (x, y) m = (isValid (x, y) m) && not (isAWall (x, y) m)
 
 -- Funcoes de movimento
 getRandomInteger :: (Int,Int) -> Int
@@ -117,19 +89,20 @@ getMove 'L' = (0, -1)
 getMove 'R' = (0, 1)
 
 -- Funcoes de inicializacao
-buildIndividuo :: Individuo
-buildIndividuo = newIndividuo
+buildIndividuo :: Int -> Individuo
+buildIndividuo chromossomeSize = newIndividuo
                 where
                     fitness = 10^6
                     moves = randomMoves chromossomeSize
                     newIndividuo = Individuo fitness moves
 
-initPopulation :: [Individuo]
-initPopulation = [ buildIndividuo | _ <- [1..populationSize]]
+initPopulation :: Int -> [Individuo]
+initPopulation chromossomeSize = [ (buildIndividuo chromossomeSize) | _ <- [1..populationSize]]
 
 -- Funcoes de impressao
-drawMaze :: [[Char]] -> IO ()
-drawMaze = putStrLn . unlines 
+drawMaze :: [[Char]] -> [Char]
+drawMaze [] = ""
+drawMaze (x:xs) = x ++ "\n" ++ (drawMaze xs)
 
 drawFittest :: [[Char]] -> (Int,Int) -> Int -> [[Char]]
 drawFittest maze (x,y) size = [[drawFittestAux maze (x,y) (j,i) | i <- [0..size-1]] | j <- [0..size-1]]
@@ -139,10 +112,6 @@ drawFittestAux maze (x,y) (i,j)
     |x == i && y == j = '*'
     |x /= i || y /= j = (maze !! i) !! j
 
-clearScreen :: IO ()
-clearScreen = do
-    SP.system "clear"
-    return ()
 
 -- Funcoes do algoritmo genetico
 mutation :: [Char] -> [Char]
@@ -165,25 +134,26 @@ moveFlipAux individual x target
         | x == target = coherentMoves (individual !! x)
         | x /= target = individual !! x
 
-calculateRecursive :: [Char] -> (Int, Int) -> Integer -> [(Int, Int)] -> Integer
-calculateRecursive [] _ f _ = f
-calculateRecursive (m:ms) (x, y) f visited = 
-        let newPos = makeAMove (x, y) m
-        in if isExit newPos
+calculateRecursive :: [Char] -> (([[Char]], [[Int]]),((Int, Int), (Int, Int))) -> Int -> [(Int, Int)] -> Int
+calculateRecursive [] ((maze, mazeDists), (position,exit)) f visited = 
+    f - (((mazeDists !! (fst position)) !! (snd position)) * 1000)
+calculateRecursive (m:ms) ((maze, mazeDists), (position,exit)) f visited = 
+        let newPos = makeAMove position m
+        in if isExit newPos maze
             then f*10^6
-            else if isValidMove newPos --Movimento valido
+            else if isValidMove newPos maze--Movimento valido
             then if newPos `elem` visited 
-                then calculateRecursive (ms) newPos (f-500) visited -- Movimento valido e visitado.
-                else calculateRecursive (ms) newPos (f-200) (newPos:visited) -- Movimento valido e nao visitado.
+                then calculateRecursive (ms) ((maze,mazeDists), (newPos,exit)) (f-500) visited -- Movimento valido e visitado.
+                else calculateRecursive (ms) ((maze,mazeDists), (newPos,exit)) (f-200) (newPos:visited) -- Movimento valido e nao visitado.
             else if newPos `elem` visited --Movimento invalido
-                then calculateRecursive (ms) (x, y) (f-700) visited -- Movimento invalido e visitado.
-                else calculateRecursive (ms) (x, y) (f-400) (newPos:visited) -- Movimento invalido e nao visitado.
+                then calculateRecursive (ms) ((maze,mazeDists), (position,exit)) (f-700) visited -- Movimento invalido e visitado.
+                else calculateRecursive (ms) ((maze,mazeDists), (position,exit)) (f-400) (newPos:visited) -- Movimento invalido e nao visitado.
 
-calculateFitnessIndividual :: Individuo -> Integer
-calculateFitnessIndividual ind = calculateRecursive (moves ind) spawn (fitness ind) []
+calculateFitnessIndividual :: Individuo -> (([[Char]], [[Int]]),((Int, Int), (Int, Int))) -> Int
+calculateFitnessIndividual ind tuple = calculateRecursive (moves ind) tuple (fitness ind) []
                 
-calculateFitness :: [Individuo] -> [Integer]
-calculateFitness xs = [calculateFitnessIndividual x | x <- xs]
+calculateFitness :: [Individuo] -> (([[Char]], [[Int]]),((Int, Int), (Int, Int))) -> [Individuo]
+calculateFitness xs tuple = [Individuo (calculateFitnessIndividual x tuple) (moves x) | x <- xs]
 
 groupsChance = [0.5, 0.25, 0.15, 0.08 , 0.02]
 groupsArray = initGroupsChance
@@ -202,16 +172,17 @@ initGroupsChance' [] groupsArray _ = groupsArray
 quartil = [round $ fromIntegral(populationSize) * 0.01, round $ fromIntegral(populationSize) * 0.25, round $ fromIntegral(populationSize) * 0.4, round $ fromIntegral(populationSize) * 0.75]
 groups = [(0, quartil !! 0), ((quartil !! 0) + 1, quartil !! 1), ((quartil !! 1) + 1, quartil !! 2), ((quartil !! 2) + 1, quartil !! 3), ((quartil !! 3) + 1, quartil !! 4)]
 
-crossover :: [Individuo] -> [String] -> Integer -> [Individuo]
-crossover newPopulation chromossomeSet n
+crossover :: [Individuo] -> [Individuo] -> [String] -> Int -> Int -> [Individuo]
+crossover population newPopulation chromossomeSet n chromossomeSize
     | n < populationSize =
-        let newMoves = crossoverIndividuo
+        let newMoves = crossoverIndividuo population chromossomeSize
         in if newMoves `elem` chromossomeSet
-            then crossover newPopulation chromossomeSet n 
-            else crossover ((Individuo 0 newMoves):newPopulation) (newMoves:chromossomeSet) (n+1)
+            then crossover population newPopulation chromossomeSet n chromossomeSize 
+            else crossover population ((Individuo (10^6) (mutation newMoves)):newPopulation) (newMoves:chromossomeSet) (n+1) chromossomeSize
     | otherwise = newPopulation
 
-crossoverIndividuo =
+crossoverIndividuo :: [Individuo] -> Int -> String
+crossoverIndividuo population chromossomeSize =
     let pairL = groups !! ((groupsArray !! getRandomInteger(0, 99)) - 1)
         pairR = groups !! ((groupsArray !! getRandomInteger(0, 99)) - 1)
         l1 = fst pairL
@@ -221,9 +192,26 @@ crossoverIndividuo =
         daddy = moves $ population !! getRandomInteger(l1, r1)
         mommy = moves $ population !! getRandomInteger(l2, r2)
         crossoverPoint = getRandomInteger(1, chromossomeSize)
-        halfSon = crossoverMommy 0 crossoverPoint mommy ""
-    in crossoverDaddy ((length halfSon) - 1) chromossomeSize daddy halfSon
+        --halfSon = crossoverMommy 0 crossoverPoint mommy ""
+    in -- crossoverDaddy ((length halfSon) - 1) chromossomeSize daddy halfSon
+        crossoverParents crossoverPoint mommy daddy chromossomeSize
     --completedSon
+
+
+crossoverParents crossoverPoint mommy daddy chromossomeSize = 
+    let pointLessThanMommy = crossoverPoint < length mommy
+        pointLessThanDaddy = length daddy <= chromossomeSize    
+    in case (pointLessThanMommy, pointLessThanDaddy) of
+        (True, True) ->  [mommy !! x | x <- [0..(crossoverPoint - 1)]] ++ [if y == crossoverPoint then coherentMoves $ mommy !! (crossoverPoint - 1) else daddy !! y | y <- [crossoverPoint..((length daddy) - 1)]]
+        (True, False) -> [mommy !! x | x <- [0..(crossoverPoint - 1)]] ++ [if y == crossoverPoint then coherentMoves $  mommy !! (crossoverPoint - 1) else daddy !! y | y <- [crossoverPoint..(chromossomeSize-1)]]
+        (False, True) -> [mommy !! x | x <- [0..(length mommy - 1)]] ++ [if y == crossoverPoint then coherentMoves $ (last mommy) else daddy !! y | y <- [crossoverPoint..(length daddy - 1)]]
+        (False, False) -> [mommy !! x | x <- [0..(length mommy - 1)]] ++ [if y == crossoverPoint then coherentMoves $  mommy !! (crossoverPoint - 1) else daddy !! y | y <- [crossoverPoint..(chromossomeSize-1)]]
+
+{-
+crossoverMommy crossoverPoint mommy
+    | crossoverPoint < length mommy = [mommy !! x | x <- [0..crossoverPoint]]
+    | otherwise = [mommy !! x | x <- [0..(length mommy - 1)]]
+
 
 crossoverMommy :: Int -> Int -> String -> String -> String
 crossoverMommy _ _ [] son = son
@@ -239,3 +227,4 @@ crossoverDaddy n crossoverPoint (move:daddy) son
     | n == crossoverPoint = crossoverDaddy (n+1) crossoverPoint daddy (son ++ [coherentMoves $ last son])
     | n < chromossomeSize = crossoverDaddy (n+1) crossoverPoint daddy (son ++ [move])
     | otherwise = son
+-}
