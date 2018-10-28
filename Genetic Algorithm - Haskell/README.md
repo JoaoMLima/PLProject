@@ -7,8 +7,13 @@ Before playing, it's necessary to install the library _Random_ from _cabal_ usin
 cabal update
 cabal install random
 ```
-## Running
+## Running at ghci
 ```
 ghci Main.hs
 >main
+```
+
+## Compiling
+```
+ghc -o Main Main.hs
 ```
