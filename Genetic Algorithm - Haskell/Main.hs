@@ -34,9 +34,6 @@ main = do
     let spawn = getSpawn mazeTuple
 
     let chromossomeSize = ((mazeSize^2) - numOfWalls maze)*2
-    
-    --putStrLn "Size of Population: "
-    --let populationSize <- readLn :: IO Int
 
     generations 0 (initPopulation chromossomeSize) mazeTuple chromossomeSize
 
@@ -46,7 +43,6 @@ main = do
     putStrLn "And now watch the dumb algorithm" 
 
     dumbGeneration 0 (initPopulation chromossomeSize) mazeTuple chromossomeSize
-
 
 -- GERAÇÃO BURRAAAAA
 dumbGeneration :: Int -> [Individuo] -> (([[Char]], [[Int]]),((Int, Int), (Int, Int))) -> Int -> IO()
