@@ -12,8 +12,8 @@ maze([["#", "#", "#", "#", "#"],
     ["#", " ", " ", "S", "#"],
     ["#", "#", "#", "#", "#"]]).
 
-swap((3, 3)).
-exit((4, 1)).
+swap(3, 3).
+exit(4, 1).
 
 getIndex(0, [Head|_], Head).
 getIndex(X, [_|Tail], Element) :- K is X - 1, getIndex(K, Tail, Element).
@@ -45,19 +45,28 @@ buildIndividuo(ChromossomeSize, individual(Fitness, Moves)) :- Fitness is 10**6,
 initPopulation(ChromossomeSize, [Individuo], 1) :- buildIndividuo(ChromossomeSize, Individuo).
 initPopulation(ChromossomeSize, [I|Individuos], Len) :- buildIndividuo(ChromossomeSize, I), K is Len - 1, initPopulation(ChromossomeSize, Individuos, K).
 
-calculateFitnessIndividual(individual(Fitness, Moves), NewFitness) :- swap(Swap), NewFitness is Fitness, calculateFitnessIndividualAux(NewFitness, Moves, Swap, []).
+calculateFitnessIndividual(individual(Fitness, Moves), individuo(NewFitness, Moves)) :- swap(SX, SY), calculateFitnessIndividualAux(Fitness, Moves, (SX,SY), Visited, NewFitness).
 
-calculateFitnessIndividualAux(_,[],_,_).
-calculateFitnessIndividualAux(CurrentFitness, [M|Moves], (XCurrent, YCurrent), Visited) :- 
-        makeAMove((XCurrent,YCurrent), M, (XNext, YNext)),
-        ((isValidMove(XNext, YNext), contains((XNext, YNext), Visited)) -> (F is CurrentFitness - 500, calculateFitnessIndividualAux(F, Moves, (XNext, YNext), Visited));
-        (isValidMove(XNext, YNext), not(contains((XNext, YNext), Visited))) -> (F is CurrentFitness - 200, V is [(XNext, YNext)|Visited], calculateFitnessIndividualAux(F, Moves, (XNext, YNext), V));
-        (not(isValidMove(XNext, YNext)), contains((XNext, YNext), Visited)) -> (F is CurrentFitness - 700, calculateFitnessIndividualAux(F, Moves, (XCurrent,YCurrent), Visited));
-        (not(isValidMove(XNext, YNext)), not(contains((XNext, YNext), Visited))) -> (F is CurrentFitness - 400, V is [(XNext, YNext)|Visited], calculateFitnessIndividualAux(F, Moves, (XCurrent,YCurrent), V))).
+calculateFitnessIndividualAux(CurrentFitness,[],_,_,NewFitness) :- NewFitness is CurrentFitness.
+calculateFitnessIndividualAux(CurrentFitness, [M|Moves], (X, Y), Visited, NewFitness) :- 
+        makeAMove((X,Y), M, (NewX, NewY)),
+        contains((NewX, NewY), Visited) -> ((isValidMove(NewX, NewY)) -> (F is CurrentFitness - 500, calculateFitnessIndividualAux(F, Moves, (NewX, NewY), Visited, NewFitness));
+                                                                         (F is CurrentFitness - 700, calculateFitnessIndividualAux(F, Moves, (X,Y), Visited, NewFitness)));
+        not(contains((NewX, NewY), Visited)) -> ((isValidMove(NewX, NewY)) -> (F is CurrentFitness - 200, V is [(NewX, NewY)| Visited], calculateFitnessIndividualAux(F, Moves, (NewX, NewY), V, NewFitness));
+                                                                              (F is CurrentFitness - 400, V is [(NewX, NewY)| Visited], calculateFitnessIndividualAux(F, Moves, (X,Y), V, NewFitness))).
+
+calculateFitnessPopulation([], _).
+calculateFitnessPopulation([I|Individuos], [NewIndividuo|NewPopulation]) :- calculateFitnessIndividual(I, NewIndividuo), calculateFitnessPopulation(Individuos, NewPopulation).
+
+
+
+
 % Testando
 % sumVector((1, 5), (0, 1), Coor).
 % randomMove(Move).
 % randomMoves(Moves, 5).
 % buildIndividuo(5, Individuo).
 % initPopulation(5, Population, 10).
-
+% buildIndividuo(5, individual(Fitness, Moves)), calculateFitnessIndividualAux(Fitness, Moves, (3,3), Visited, NewFitness).
+% buildIndividuo(5, Individuo), calculateFitnessIndividual(Individuo, NewIndividuo).
+% initPopulation(5, Population, 5), calculateFitnessPopulation(Population, NewPopulation).
