@@ -1,3 +1,12 @@
+:- module('GA', [
+        maze/1,
+        buildIndividuo/2,
+        initPopulation/3,
+        calculateFitnessIndividual/2,
+        calculateFitnessPopulation/2
+        ]
+).
+
 :- use_module(library(random)).
 
 contains(Element, [Element|_]).
@@ -45,7 +54,7 @@ buildIndividuo(ChromossomeSize, individual(Fitness, Moves)) :- Fitness is 10**6,
 initPopulation(ChromossomeSize, [Individuo], 1) :- buildIndividuo(ChromossomeSize, Individuo).
 initPopulation(ChromossomeSize, [I|Individuos], Len) :- buildIndividuo(ChromossomeSize, I), K is Len - 1, initPopulation(ChromossomeSize, Individuos, K).
 
-calculateFitnessIndividual(individual(Fitness, Moves), individuo(NewFitness, Moves)) :- swap(SX, SY), calculateFitnessIndividualAux(Fitness, Moves, (SX,SY), Visited, NewFitness).
+calculateFitnessIndividual(individual(Fitness, Moves), individuo(NewFitness, Moves)) :- swap(SX, SY), calculateFitnessIndividualAux(Fitness, Moves, (SX,SY), _, NewFitness).
 
 calculateFitnessIndividualAux(CurrentFitness,[],_,_,NewFitness) :- NewFitness is CurrentFitness.
 calculateFitnessIndividualAux(CurrentFitness, [M|Moves], (X, Y), Visited, NewFitness) :- 
@@ -57,7 +66,6 @@ calculateFitnessIndividualAux(CurrentFitness, [M|Moves], (X, Y), Visited, NewFit
 
 calculateFitnessPopulation([], _).
 calculateFitnessPopulation([I|Individuos], [NewIndividuo|NewPopulation]) :- calculateFitnessIndividual(I, NewIndividuo), calculateFitnessPopulation(Individuos, NewPopulation).
-
 
 
 
