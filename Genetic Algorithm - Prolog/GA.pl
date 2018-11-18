@@ -1,9 +1,14 @@
 :- module('GA', [
+        spaw/2,
+        getMove/2,
+        makeAMove/3,
+        isValidMove/2,
         maze/1,
         buildIndividuo/2,
         initPopulation/3,
         calculateFitnessIndividual/2,
-        calculateFitnessPopulation/2
+        calculateFitnessPopulation/2,
+        concat/3
         ]
 ).
 
@@ -11,6 +16,13 @@
 
 contains(Element, [Element|_]).
 contains(Element, [_|Tail]) :- contains(Element, Tail).
+
+concat([ ],L,L).
+concat([X|L1],L2,[X|L3]) :- concat(L1,L2,L3).
+
+subList(_, 0, 0, _).
+subList([X|L], 0, End, [X|SL]) :- K is End - 1, subList(L, 0, K, SL).
+subList([_|L], Start, End, SL):- K is Start - 1, subList(L, K, End, SL).
 
 individual(fitness, moves).
 populationSize(1000).
@@ -21,7 +33,7 @@ maze([["#", "#", "#", "#", "#"],
     ["#", " ", " ", "S", "#"],
     ["#", "#", "#", "#", "#"]]).
 
-swap(3, 3).
+spaw(3, 3).
 exit(4, 1).
 
 getIndex(0, [Head|_], Head).
@@ -54,8 +66,9 @@ buildIndividuo(ChromossomeSize, individual(Fitness, Moves)) :- Fitness is 10**6,
 initPopulation(ChromossomeSize, [Individuo], 1) :- buildIndividuo(ChromossomeSize, Individuo).
 initPopulation(ChromossomeSize, [I|Individuos], Len) :- buildIndividuo(ChromossomeSize, I), K is Len - 1, initPopulation(ChromossomeSize, Individuos, K).
 
-calculateFitnessIndividual(individual(Fitness, Moves), individuo(NewFitness, Moves)) :- swap(SX, SY), calculateFitnessIndividualAux(Fitness, Moves, (SX,SY), _, NewFitness).
+calculateFitnessIndividual(individual(Fitness, Moves), individuo(NewFitness, Moves)) :- spaw(SX, SY), calculateFitnessIndividualAux(Fitness, Moves, (SX,SY), _, NewFitness).
 
+calculateFitnessIndividualAux(CurrentFitness, _, (Xe, Ye), _, NewFitness) :- NewFitness is CurrentFitness * (10**6).
 calculateFitnessIndividualAux(CurrentFitness,[],_,_,NewFitness) :- NewFitness is CurrentFitness.
 calculateFitnessIndividualAux(CurrentFitness, [M|Moves], (X, Y), Visited, NewFitness) :- 
         makeAMove((X,Y), M, (NewX, NewY)),
