@@ -68,8 +68,8 @@ initPopulation(ChromossomeSize, [I|Individuos], Len) :- buildIndividuo(Chromosso
 
 calculateFitnessIndividual(individual(Fitness, Moves), individuo(NewFitness, Moves)) :- spaw(SX, SY), calculateFitnessIndividualAux(Fitness, Moves, (SX,SY), _, NewFitness).
 
-calculateFitnessIndividualAux(CurrentFitness, _, (Xe, Ye), _, NewFitness) :- NewFitness is CurrentFitness * (10**6).
-calculateFitnessIndividualAux(CurrentFitness,[],_,_,NewFitness) :- NewFitness is CurrentFitness.
+calculateFitnessIndividualAux(CurrentFitness, _, (Xe, Ye), _, NewFitness) :- exit(Xe, Ye), NewFitness is CurrentFitness * (10**6).
+calculateFitnessIndividualAux(CurrentFitness,[],_,_,CurrentFitness).
 calculateFitnessIndividualAux(CurrentFitness, [M|Moves], (X, Y), Visited, NewFitness) :- 
         makeAMove((X,Y), M, (NewX, NewY)),
         contains((NewX, NewY), Visited) -> ((isValidMove(NewX, NewY)) -> (F is CurrentFitness - 500, calculateFitnessIndividualAux(F, Moves, (NewX, NewY), Visited, NewFitness));
@@ -80,8 +80,6 @@ calculateFitnessIndividualAux(CurrentFitness, [M|Moves], (X, Y), Visited, NewFit
 calculateFitnessPopulation([], _).
 calculateFitnessPopulation([I|Individuos], [NewIndividuo|NewPopulation]) :- calculateFitnessIndividual(I, NewIndividuo), calculateFitnessPopulation(Individuos, NewPopulation).
 
-
-
 % Testando
 % sumVector((1, 5), (0, 1), Coor).
 % randomMove(Move).
@@ -91,3 +89,4 @@ calculateFitnessPopulation([I|Individuos], [NewIndividuo|NewPopulation]) :- calc
 % buildIndividuo(5, individual(Fitness, Moves)), calculateFitnessIndividualAux(Fitness, Moves, (3,3), Visited, NewFitness).
 % buildIndividuo(5, Individuo), calculateFitnessIndividual(Individuo, NewIndividuo).
 % initPopulation(5, Population, 5), calculateFitnessPopulation(Population, NewPopulation).
+%calculateFitnessIndividualAux(1000000, ["D, "R", "U", "L", "U"], (3, 3), Visited, NewFitness).
