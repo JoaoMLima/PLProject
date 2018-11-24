@@ -1,4 +1,5 @@
 :- use_module('GA').
+:- use_module('Maze').
 :- initialization main.
 
 cls :- write('\e[H\e[2J').
