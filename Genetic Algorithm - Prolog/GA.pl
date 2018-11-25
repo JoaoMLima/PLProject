@@ -20,10 +20,6 @@ contains(Element, [_|Tail], false) :- contains(Element, Tail, false).
 concat([ ],L,L).
 concat([X|L1],L2,[X|L3]) :- concat(L1,L2,L3).
 
-subList(_, 0, 0, _).
-subList([X|L], 0, End, [X|SL]) :- K is End - 1, subList(L, 0, K, SL).
-subList([_|L], Start, End, SL):- K is Start - 1, subList(L, K, End, SL).
-
 individual(fitness, moves).
 populationSize(1000).
 
