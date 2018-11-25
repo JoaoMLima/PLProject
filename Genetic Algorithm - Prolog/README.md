@@ -7,5 +7,5 @@ Before playing, is requires the swi-prolog version 7.6.x. You may find how insta
 
 To execute the GA execute the command:
 ```
-swipl Main.hs
+swipl Main.pl
 ```
