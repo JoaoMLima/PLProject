@@ -5,6 +5,7 @@
     freeSpace/1,
     mazeSpawn/1
     ]).
+:- dynamic 'Maze':root/1, 'Maze':mazeSpawn/1, 'Maze':mazeExit/1, 'Maze':freeSpace/1, 'Maze':lengthMaze/1.
 
 %Auxiliar
 sumVector((X1, Y1), (X2, Y2), (X3, Y3)) :- X3 is X1 + X2, Y3 is Y1 + Y2.

@@ -10,21 +10,11 @@
         ]
 ).
 :- use_module('Maze').
-
+:- use_module('Util').
 :- use_module(library(random)).
-
-contains(_, [], false).
-contains(Element, [Element|_], true).
-contains(Element, [_|Tail], false) :- contains(Element, Tail, false).
-
-concat([ ],L,L).
-concat([X|L1],L2,[X|L3]) :- concat(L1,L2,L3).
 
 individual(fitness, moves).
 populationSize(1000).
-
-getIndex(0, [Head|_], Head).
-getIndex(X, [_|Tail], Element) :- K is X - 1, getIndex(K, Tail, Element).
 
 insertAtEnd(X,Y,Z) :- append(Y,[X],Z).
 
@@ -78,6 +68,7 @@ verifyMove(Pos, Visited, Result) :-
 groups([[0, 10],[11, 250],[251, 400],[401, 750],[751,1000]]).
 groupsChance([0.5, 0.25, 0.15, 0.08, 0.02]).
 
+/*
 initGroupsList(GroupList) :- initGroupsList_(_,0,GroupList).
 initGroupsList_(GroupList,5, GroupList).
 initGroupsList_(GroupList, N, Output) :- groupsChance(G), getIndex(N,G,Chance), C is round(Chance*100),
@@ -87,27 +78,32 @@ initGroupsList_(GroupList, N, Output) :- groupsChance(G), getIndex(N,G,Chance), 
 repl(X, N, L) :-
         length(L, N),
         maplist(=(X), L).
+*/
 
-crossover(Population, NewPopulation, ChromossomeSize) :- initGroupsList(GroupList), crossOver_(Population, ChromossomeSize, GroupList, NewPopulation, 0).
+findGroup(L1,L2) :- random_between(0,99,Rand), findGroup_(L1,L2,Rand).
+findGroup_(L1,L2,Rand) :-
+        (Rand >= 0), (Rand < 50) -> (L1 is 0, L2 is 10);
+        (Rand >= 50), (Rand < 75) -> (L1 is 11, L2 is 250);
+        (Rand >= 75), (Rand < 89) -> (L1 is 251, L2 is 400);
+        (Rand >= 90), (Rand < 97) -> (L1 is 401, L2 is 750);
+        (Rand >= 98), (Rand < 100) -> (L1 is 751, L2 is 1000).
+
+crossover(Population, NewPopulation, ChromossomeSize) :-crossOver_(Population, ChromossomeSize, NewPopulation, 0).
         
-crossOver_(_,_,_,[],1000).
-crossOver_(Population, ChromossomeSize, GroupList, [Son|NewPopulation], N) :- groups(Groups),
-                                    random_between(0, 99, Rand1), getIndex(Rand1, GroupList, Group1), getIndex(Group1, Groups, [L1, L2]),
-                                    random_between(0, 99, Rand2), getIndex(Rand2, GroupList, Group2), getIndex(Group2, Groups, [R1, R2]),
+crossOver_(_,_,[],1000).
+crossOver_(Population, ChromossomeSize, [Son|NewPopulation], N) :-
+                                    findGroup(L1,L2),
+                                    findGroup(R1,R2),
                                     newRandom(L1, R1, RandDaddy), getIndex(RandDaddy, Population, Daddy),
                                     newRandom(L2, R2, RandMommy), getIndex(RandMommy, Population, Mommy),
                                     crossOverIndividual(ChromossomeSize, Daddy, Mommy, Son),
                                     K is N + 1,
-                                    crossOver_(Population, ChromossomeSize, GroupList, NewPopulation, K).
-
-newRandom(Left, Right, Result) :- (Left > Right) -> random_between(Right, Left, Result) ; random_between(Left, Right, Result).
-
+                                    crossOver_(Population, ChromossomeSize, NewPopulation, K).
 
 coherentMoves("U", ["U","L","R"]).
 coherentMoves("D", ["D","L","R"]).
 coherentMoves("R", ["R","D","U"]).
 coherentMoves("L", ["L","D","U"]).
-
 
 crossOverIndividual(ChromossomeSize, individual(_,MovesMommy), individual(_,MovesDaddy), CompletedSon) :-
         random_between(0,1,Rand),
@@ -125,14 +121,6 @@ coMommy(CrossOverPoint, [M|MovesMommy], [M|MommysSon], StoppingPoint, Last) :-
         K is CrossOverPoint - 1, coMommy(K, MovesMommy, MommysSon, S, L), StoppingPoint is 1 + S, string_codes(Last,L).
 
 addCoherentMoves(Son, Last, CMSon) :- coherentMoves(Last, CM), random_between(0, 2, Rand), getIndex(Rand, CM, CoMove), insertAtEnd(CoMove, Son, CMSon).
-
-
-
-partOfList(0,_,[],[]).
-partOfList(0, 0, _, []).
-partOfList(0, Right, [H|List], [H|OutputList]) :- R is Right - 1, partOfList(0, R, List, OutputList).
-partOfList(Left, Right, [_|List], OutputList) :- L is Left - 1, partOfList(L, Right, List, OutputList).
-partOfList(_,_,[],[]).
 
 % Testando
 % sumVector((1, 5), (0, 1), Coor).
