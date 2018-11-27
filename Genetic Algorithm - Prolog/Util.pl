@@ -1,10 +1,13 @@
 :- module('Util', [
-        contains/3,
-        concat/3,
-        getIndex/3,
-        newRandom/3,
-        partOfList/4
-    ]).
+    contains/3,
+    concat/3,
+    getIndex/3,
+    newRandom/3,
+    partOfList/4,
+    isEmpty/1,
+    revert/2,
+    revertAux/3
+]).
 
 contains(_, [], false).
 contains(Element, [Element|_], true).
@@ -23,3 +26,9 @@ partOfList(0, 0, _, []).
 partOfList(0, Right, [H|List], [H|OutputList]) :- R is Right - 1, partOfList(0, R, List, OutputList).
 partOfList(Left, Right, [_|List], OutputList) :- L is Left - 1, partOfList(L, Right, List, OutputList).
 partOfList(_,_,[],[]).
+
+isEmpty([]).
+
+revert(Moves, NewMoves) :- revertAux(Moves,[],NewMoves).
+revertAux([],Acc,Acc).
+revertAux([H|T],Acc,R) :- revertAux(T,[H|Acc],R).

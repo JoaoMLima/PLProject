@@ -5,9 +5,9 @@
     freeSpace/1,
     mazeSpawn/1
     ]).
-:- dynamic 'Maze':root/1, 'Maze':mazeSpawn/1, 'Maze':mazeExit/1, 'Maze':freeSpace/1, 'Maze':lengthMaze/1.
 
-%Auxiliar
+:- dynamic mazeExit/1, freeSpace/1, mazeSpawn/1, lengthMaze/1, root/1.
+
 sumVector((X1, Y1), (X2, Y2), (X3, Y3)) :- X3 is X1 + X2, Y3 is Y1 + Y2.
 move(0, (-2, 0)).
 move(1, (2, 0)).
@@ -23,14 +23,10 @@ icon(Pos, Ch) :- (mazeExit(Pos), Ch = 'E');
     (mazeSpawn(Pos), Ch = 'S'); (freeSpace(Pos), Ch = ' '); Ch = '#'.
 isAWall(Pos) :- isValid(Pos), icon(Pos, Icon), Icon =:= "#".
 
-
-
-
 %Aleatoriedades
 getMoves([], []).
 getMoves([H|T], [Mv|RestMvs]) :- getMoves(T, RestMvs), move(H, Mv).
 randomFourMoves(Mvs) :- random_permutation([0, 1, 2, 3], List), getMoves(List, Mvs).
-
 
 %Maze recursions
 setExit() :- lengthMaze(Len), HalfLen is (Len - 1) / 2, random(0, HalfLen, R1), random(0, 2, R2), random(0, 2, R3),
@@ -47,7 +43,6 @@ recurCallerMazeGen(_, []) .
 recurCallerMazeGen(P, [(X1, Y1)|T]) :- (X2 is X1 / 2, Y2 is Y1 / 2,
     sumVector(P, (X1, Y1), Next), sumVector(P, (X2, Y2), Intermed), isValid(Next),  (\+ freeSpace(Next)),
     assert(freeSpace(Next)), assert(freeSpace(Intermed)), recMazeGen(Next), recurCallerMazeGen(P, T)); recurCallerMazeGen(P, T).
-
 
 maze(Len, M) :- assert(lengthMaze(Len)), mazeGen(), getMazeLine(0, M).
 

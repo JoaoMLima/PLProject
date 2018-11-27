@@ -6,7 +6,10 @@
         initPopulation/3,
         calculateFitnessIndividual/2,
         calculateFitnessPopulation/2,
-        concat/3
+        concat/3,
+        mutation/2,
+        flipMove/3,
+        addMoves/3
         ]
 ).
 :- use_module('Maze').
@@ -107,6 +110,18 @@ crossOver_(Population, ChromossomeSize, [Son|NewPopulation], N) :-
                                     K is N + 1,
                                     crossOver_(Population, ChromossomeSize, NewPopulation, K).
 
+mutation(Moves, NewMoves) :- length(Moves, Leng), Len is Leng-1, newRandom(0,10,R) -> (
+        isEmpty(Moves), NewMoves = [];
+        R > 6, HalfLen is Len//2, newRandom(1,HalfLen,Rand), revert(Moves,RevertedMoves), addMoves(RevertedMoves, Rand, NewMovesReverted), revert(NewMovesReverted,NewMoves);
+        R =< 6, newRandom(0,Len,Pos), flipMove(Moves, Pos, NewMoves)).
+        
+flipMove([H|T], 0, [Result|T]) :- pickCoherentMoves(H, Result).
+flipMove([H|T], Pos, [H|NewMoves]) :- NewPos is Pos-1, flipMove(T, NewPos, NewMoves).
+
+addMoves(M,0,M).
+addMoves([H|T], Len, NewMoves) :- pickCoherentMoves(H,Result), NewLen is Len-1, addMoves([Result|[H|T]], NewLen, NewMoves).
+
+
 coherentMoves("U", ["U","L","R"]).
 coherentMoves("D", ["D","L","R"]).
 coherentMoves("R", ["R","D","U"]).
@@ -128,6 +143,8 @@ coMommy(CrossOverPoint, [M|MovesMommy], [M|MommysSon], StoppingPoint, Last) :-
         K is CrossOverPoint - 1, coMommy(K, MovesMommy, MommysSon, S, L), StoppingPoint is 1 + S, string_codes(Last,L).
 
 addCoherentMoves(Son, Last, CMSon) :- coherentMoves(Last, CM), random_between(0, 2, Rand), getIndex(Rand, CM, CoMove), insertAtEnd(CoMove, Son, CMSon).
+
+pickCoherentMoves(Move, CoMove) :- coherentMoves(Move, CM), random_between(0, 2, Rand), getIndex(Rand, CM, CoMove).
 
 % Testando
 % sumVector((1, 5), (0, 1), Coor).
