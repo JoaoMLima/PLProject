@@ -49,7 +49,7 @@ buildIndividuo(ChromossomeSize, individual(Fitness, Moves)) :- Fitness is 10**6,
 initPopulation(ChromossomeSize, [Individuo], 1) :- buildIndividuo(ChromossomeSize, Individuo).
 initPopulation(ChromossomeSize, [I|Individuos], Len) :- buildIndividuo(ChromossomeSize, I), K is Len - 1, initPopulation(ChromossomeSize, Individuos, K).
 
-calculateFitnessIndividual(individual(Fitness, Moves), individuo(NewFitness, Moves)) :- mazeSpawn(Pos), calculateFitnessIndividualAux(Fitness, Moves, Pos, _, NewFitness).
+calculateFitnessIndividual(individual(Fitness, Moves), individual(NewFitness, Moves)) :- mazeSpawn(Pos), calculateFitnessIndividualAux(Fitness, Moves, Pos, _, NewFitness).
 
 calculateFitnessIndividualAux(CurrentFitness, _, Pos, _, NewFitness) :- mazeExit(Pos), NewFitness is CurrentFitness * (10**6).
 calculateFitnessIndividualAux(CurrentFitness,[],_,_,CurrentFitness).
