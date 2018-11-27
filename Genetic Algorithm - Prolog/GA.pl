@@ -16,6 +16,13 @@
 individual(fitness, moves).
 populationSize(1000).
 
+% Sort population without removing elements with equal keys (Fitness). Descending.
+sortPopulation(Population,SortedPopulation):- sort(1, @>=, Population, SortedPopulation).
+
+% Sort population removing elements with equal keys (Moves). Ascending.
+sortPopulationRemoving(Population,SortedPopulation):- sort(2, @<, Population,SortedPopulation).
+
+
 insertAtEnd(X,Y,Z) :- append(Y,[X],Z).
 
 makeAMove(Pos, Direction, Result) :- getMove(Direction, CoorMove), sumVector(Pos, CoorMove, Result).
