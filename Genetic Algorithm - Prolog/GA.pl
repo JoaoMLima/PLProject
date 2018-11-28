@@ -9,7 +9,10 @@
         concat/3,
         mutation/2,
         flipMove/3,
-        addMoves/3
+        addMoves/3,
+        sortPopulation/2,
+        sortPopulationRemoving/2,
+        crossover/3
         ]
 ).
 :- use_module('Maze').
@@ -61,7 +64,7 @@ calculateFitnessIndividualAux(CurrentFitness, [M|Moves], Pos, Visited, NewFitnes
         (Result == 3, F is CurrentFitness - 200, calculateFitnessIndividualAux(F, Moves, NewPos, [NewPos|Visited], NewFitness));
         (Result == 4, F is CurrentFitness - 400, calculateFitnessIndividualAux(F, Moves, Pos, [NewPos|Visited], NewFitness))).
 
-calculateFitnessPopulation([], _).
+calculateFitnessPopulation([], []).
 calculateFitnessPopulation([I|Individuos], [NewIndividuo|NewPopulation]) :- calculateFitnessIndividual(I, NewIndividuo), calculateFitnessPopulation(Individuos, NewPopulation).
 
 verifyMove(Pos, Visited, Result) :-

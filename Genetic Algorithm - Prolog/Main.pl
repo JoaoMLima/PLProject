@@ -1,5 +1,6 @@
 :- use_module('GA').
 :- use_module('Maze').
+:- use_module('Util').
 :- initialization main.
 
 cls :- write('\e[H\e[2J').
@@ -23,8 +24,7 @@ drawIndividual([M|Moves], Maze, (Xc, Yc)) :-
     (cls, drawPoint((Xc, Yc), Maze), sleep(0.5), drawIndividual(Moves, Maze, (Xc, Yc))).
 
 %Corrigir isso aqui pra ficar maneiro.
-drawIndividual(individual(_, Moves)) :- 
-    maze(Maze), spaw(Xs, Ys), drawIndividual(Moves, Maze, (Xs, Ys)).
+drawIndividual(Maze, individual(_, Moves)) :- mazeSpawn((Xs, Ys)), drawIndividual(Moves, Maze, (Xs, Ys)).
 
 showTitle():- cls, writeln("#####################################################################################################################"),
 sleep(0.3),
@@ -54,27 +54,46 @@ writeln("João Marcos: o GERADOR de caminhos"),
 sleep(1),
 writeln("Henrique: o FINISHER burocrático"),
 sleep(1),
-writeln("Flavio: o DEBUGGER quântico"). 
+writeln("Flavio: o DEBUGGER quântico").
 
-% Fazer Esse Método
 %chromossomeSize(Size,Maze,ChromossomeSize):-
 
 % Calcula o fitness, ordena a população, pega o mais fitness, printa os movimentos do mais fitness, pega o fitness do individuo, verifica se ele solucionou o labirinto. Se sim, termina a recursão.
 % se não terminou a recursão, faz o crossover e chama solve de novo.
 
-solve(Maze,Population, individual(Fitness, Moves), ChromossomeSize, GenNumber):- 
-    calculateFitnessPopulation(Population, NewPopulation),sortPopulation(NewPopulation,SortedPopulation),
-    first(SortedPopulation, individual(FitnessFirst, MovesFirst)), write("Geracao "), write(GenNumber), write(": "), writeln(MovesFirst),
-    (FitnessFirst < 1000000) -> (crossover(SortedPopulation,PopulationCrossover, ChromossomeSize), NextGen is GenNumber +1, solve(Maze,PopulationCrossover,individual(FitnessFirst, MovesFirst), ChromossomeSize),NextGen);
-    Fitness is FitnessFirst; Moves is MovesFirst.
+%solve(_,_, individual(Fitness, Moves), ChromossomeSize, GenNumber):- (Fitness > 1000000), write("Geracao "), write(GenNumber), write(": "), writeln(Moves).
 
+%solve(Maze,Population, Ind, ChromossomeSize, GenNumber):- 
+ %   calculateFitnessPopulation(Population, NewPopulation),sortPopulation(NewPopulation,SortedPopulation),
+  % first(SortedPopulation, individual(FitnessFirst, MovesFirst)), write("Geracao "), write(GenNumber), write(": "), writeln(MovesFirst),
+   % (FitnessFirst < 1000000) -> crossover(SortedPopulation,PopulationCrossover, ChromossomeSize), NextGen is GenNumber +1, solve(Maze,PopulationCrossover,individual(Fitness, Moves), ChromossomeSize,NextGen); Ind is individual(FitnessFirst, MovesFirst).
+
+% myNewSolve(Maze,Population,individual(Fitness,Moves),ChromossomeSize,GenNumber):-
+%     calculateFitnessPopulation(Population,FitnessPopulation), sortPopulation(FitnessPopulation,SortedPopulation),
+%     first(SortedPopulation, individual(Fitness,Moves)),
+%     write("Geracao "), write(GenNumber), write(": "), writeln(Moves),
+%     solveAux(Maze,SortedPopulation, Ind ,ChromossomeSize,GenNumber).
+
+% solveAux(Maze,Population,individual(Fitness,Moves), ChromossomeSize,GenNumber):-
+%     (Fitness =< 1000000) -> (NextGen is GenNumber + 1, Individual = individual(Fitness,Moves), myNewSolve(Maze, Population,Individual, ChromossomeSize, NextGen));writeln("acabou").
+
+solve(Maze,Population,Ind,ChromossomeSize,GenNumber):-
+    calculateFitnessPopulation(Population,FitnessPopulation), sortPopulation(FitnessPopulation,SortedPopulation),
+    first(SortedPopulation, individual(Fitness, Moves)),
+    write("Geracao: "), write(GenNumber), write(": "), writeln(Moves),
+    (Fitness =< 1000000) -> (solve(Maze,SortedPopulation, Ind,ChromossomeSize,(GenNumber + 1)));
+    Ind = individual(Fitness,Moves).
+
+readNumber(Number) :- read_line_to_codes(user_input, Codes),
+                      string_to_atom(Codes, Atom),
+                      atom_number(Atom, Number).
 main :-
     % Pega o tamanho do labirinto, gera o labirinto, calcula o chromossomeSize, inicia uma população de 1000 individuos baseados nesses valores.
-    read(Size), maze(Size, Maze), chromossomeSize(Size, Maze, ChromossomeSize), initPopulation(1000, Population, ChromossomeSize),
+    readNumber(Size), maze(Size, Maze), ln, showList(Maze), ln, ChromossomeSize is 10, initPopulation(ChromossomeSize, Population, 5),
     % Começa a solucionar o labirinto, dado o labirinto e sua população inicial. Ao fim retorna um individuo que terminou o labirinto.
-    solve(Maze,Population, Individuo, ChromossomeSize, 0),
+    solve(Maze,Population, Individuo, ChromossomeSize, 0), sleep(5),
     % Desenha o individuo solucionando o labirinto. Ajeitar o método.
-    drawIndividual(Maze, Individuo).
+    drawIndividual(Maze,Individuo), writeln(Individuo).
 
 mainTest :- maze(5,Maze), ln, showList(Maze), ln,
         initPopulation(5, Population, 5),
