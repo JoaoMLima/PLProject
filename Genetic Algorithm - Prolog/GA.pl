@@ -9,7 +9,8 @@
         concat/3,
         mutation/2,
         flipMove/3,
-        addMoves/3
+        addMoves/3,
+        sortPopulation/2
         ]
 ).
 :- use_module('Maze').
