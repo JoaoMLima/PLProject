@@ -46,7 +46,7 @@ writeln("                                                                       
 sleep(1),
 writeln("O SOLUCIONADOR MAIS EFICIENTE DO MERCADO PROPORCIONADO PELO GRUPO:\n"),
 sleep(2),
-writeln("Wesley: o DEUS da recursão"),
+writeln("Wesley: o CYKA BLYAT da recursão"),
 sleep(1),
 writeln("Eduardo: o MUTANTE com chicungunha"),
 sleep(1),
@@ -62,17 +62,17 @@ writeln("Flavio: o DEBUGGER quântico").
 % Calcula o fitness, ordena a população, pega o mais fitness, printa os movimentos do mais fitness, pega o fitness do individuo, verifica se ele solucionou o labirinto. Se sim, termina a recursão.
 % se não terminou a recursão, faz o crossover e chama solve de novo.
 
-solve(Maze,Population, individual(Fitness, Moves), ChromossomeSize):- 
+solve(Maze,Population, individual(Fitness, Moves), ChromossomeSize, GenNumber):- 
     calculateFitnessPopulation(Population, NewPopulation),sortPopulation(NewPopulation,SortedPopulation),
-    first(SortedPopulation, individual(FitnessFirst, MovesFirst)), write("Geracao X: "), writeln(MovesFirst),
-    (Fitness < 1000000) -> (crossover(SortedPopulation,PopulationCrossover, ChromossomeSize), solve(Maze,PopulationCrossover,individual(FitnessFirst, MovesFirst), ChromossomeSize));
+    first(SortedPopulation, individual(FitnessFirst, MovesFirst)), write("Geracao "), write(GenNumber), write(": "), writeln(MovesFirst),
+    (FitnessFirst < 1000000) -> (crossover(SortedPopulation,PopulationCrossover, ChromossomeSize), NextGen is GenNumber +1, solve(Maze,PopulationCrossover,individual(FitnessFirst, MovesFirst), ChromossomeSize),NextGen);
     Fitness is FitnessFirst; Moves is MovesFirst.
 
 main :-
     % Pega o tamanho do labirinto, gera o labirinto, calcula o chromossomeSize, inicia uma população de 1000 individuos baseados nesses valores.
     read(Size), maze(Size, Maze), chromossomeSize(Size, Maze, ChromossomeSize), initPopulation(1000, Population, ChromossomeSize),
     % Começa a solucionar o labirinto, dado o labirinto e sua população inicial. Ao fim retorna um individuo que terminou o labirinto.
-    solve(Maze,Population, Individuo, ChromossomeSize),
+    solve(Maze,Population, Individuo, ChromossomeSize, 0),
     % Desenha o individuo solucionando o labirinto. Ajeitar o método.
     drawIndividual(Maze, Individuo).
 
