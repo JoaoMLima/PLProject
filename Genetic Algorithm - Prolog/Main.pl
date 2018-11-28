@@ -79,7 +79,7 @@ main :-
 
 
 
-main :- maze(5,Maze), ln, showList(Maze), ln,
+mainTest :- maze(5,Maze), ln, showList(Maze), ln,
         initPopulation(5, Population, 5),
         showList(Population), ln,
         calculateFitnessPopulation(Population, NewPopulation),
