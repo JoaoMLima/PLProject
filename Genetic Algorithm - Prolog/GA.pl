@@ -25,8 +25,6 @@ sortPopulation(Population,SortedPopulation):- sort(1, @>=, Population, SortedPop
 % Sort population removing elements with equal keys (Moves). Ascending.
 sortPopulationRemoving(Population,SortedPopulation):- sort(2, @<, Population,SortedPopulation).
 
-%Henrique 1000% Comedor de Traveco faz um movimento
-
 makeAMove(Pos, Direction, Result) :- getMove(Direction, CoorMove), sumVector(Pos, CoorMove, Result).
 isValidMove(Pos) :- freeSpace(Pos).
 isValidMove(Pos, true) :- freeSpace(Pos).
@@ -53,7 +51,7 @@ initPopulation(ChromossomeSize, [I|Individuos], Len) :- buildIndividuo(Chromosso
 
 calculateFitnessIndividual(individual(Fitness, Moves), individual(NewFitness, Moves)) :- mazeSpawn(Pos), calculateFitnessIndividualAux(Fitness, Moves, Pos, _, NewFitness).
 
-calculateFitnessIndividualAux(CurrentFitness, _, Pos,_, NewFitness) :- mazeExit(Pos), NewFitness is CurrentFitness * (10**6).
+calculateFitnessIndividualAux(CurrentFitness, _, Pos,_, NewFitness) :- mazeExit(Pos), NewFitness is (CurrentFitness * (10**6)).
 calculateFitnessIndividualAux(CurrentFitness,[],_,_,CurrentFitness).
 calculateFitnessIndividualAux(CurrentFitness, [M|Moves], Pos, Visited, NewFitness) :-
         makeAMove(Pos, M, NewPos),
