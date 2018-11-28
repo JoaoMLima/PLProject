@@ -32,10 +32,10 @@ isValidMove(Pos) :- freeSpace(Pos).
 isValidMove(Pos, true) :- freeSpace(Pos).
 isValidMove(_, false).
 
-getMove("U", (0, -1)).
-getMove("D", (0, 1)).
-getMove("L", (-1, 0)).
-getMove("R", (1, 0)).
+getMove("U", (-1, 0)).
+getMove("D", (1, 0)).
+getMove("L", (0, -1)).
+getMove("R", (0, 1)).
 direction(0, "U").
 direction(1, "D").
 direction(2, "L").
@@ -53,7 +53,7 @@ initPopulation(ChromossomeSize, [I|Individuos], Len) :- buildIndividuo(Chromosso
 
 calculateFitnessIndividual(individual(Fitness, Moves), individual(NewFitness, Moves)) :- mazeSpawn(Pos), calculateFitnessIndividualAux(Fitness, Moves, Pos, _, NewFitness).
 
-calculateFitnessIndividualAux(CurrentFitness, _, Pos,[], NewFitness) :- mazeExit(Pos), NewFitness is CurrentFitness * (10**6).
+calculateFitnessIndividualAux(CurrentFitness, _, Pos,_, NewFitness) :- mazeExit(Pos), NewFitness is (CurrentFitness * (10**6)).
 calculateFitnessIndividualAux(CurrentFitness,[],_,_,CurrentFitness).
 calculateFitnessIndividualAux(CurrentFitness, [M|Moves], Pos, Visited, NewFitness) :-
         makeAMove(Pos, M, NewPos),
