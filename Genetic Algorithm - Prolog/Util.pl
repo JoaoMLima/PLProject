@@ -6,7 +6,8 @@
     partOfList/4,
     isEmpty/1,
     revert/2,
-    revertAux/3
+    revertAux/3,
+    insertAtEnd/3
 ]).
 
 contains(_, [], false).
@@ -32,3 +33,5 @@ isEmpty([]).
 revert(Moves, NewMoves) :- revertAux(Moves,[],NewMoves).
 revertAux([],Acc,Acc).
 revertAux([H|T],Acc,R) :- revertAux(T,[H|Acc],R).
+
+insertAtEnd(X,Y,Z) :- append(Y,[X],Z).

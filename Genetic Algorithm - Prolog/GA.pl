@@ -25,8 +25,7 @@ sortPopulation(Population,SortedPopulation):- sort(1, @>=, Population, SortedPop
 % Sort population removing elements with equal keys (Moves). Ascending.
 sortPopulationRemoving(Population,SortedPopulation):- sort(2, @<, Population,SortedPopulation).
 
-
-insertAtEnd(X,Y,Z) :- append(Y,[X],Z).
+%Henrique 1000% Comedor de Traveco faz um movimento
 
 makeAMove(Pos, Direction, Result) :- getMove(Direction, CoorMove), sumVector(Pos, CoorMove, Result).
 isValidMove(Pos) :- freeSpace(Pos).
@@ -54,8 +53,8 @@ initPopulation(ChromossomeSize, [I|Individuos], Len) :- buildIndividuo(Chromosso
 
 calculateFitnessIndividual(individual(Fitness, Moves), individual(NewFitness, Moves)) :- mazeSpawn(Pos), calculateFitnessIndividualAux(Fitness, Moves, Pos, _, NewFitness).
 
-calculateFitnessIndividualAux(CurrentFitness, _, Pos, _, NewFitness) :- mazeExit(Pos), NewFitness is CurrentFitness * (10**6).
-calculateFitnessIndividualAux(CurrentFitness,[],_,_,CurrentFitness).
+calculateFitnessIndividualAux(CurrentFitness, _, Pos,[], NewFitness) :- mazeExit(Pos), NewFitness is CurrentFitness * (10**6).
+calculateFitnessIndividualAux(CurrentFitness,[],_,[],CurrentFitness).
 calculateFitnessIndividualAux(CurrentFitness, [M|Moves], Pos, Visited, NewFitness) :-
         makeAMove(Pos, M, NewPos),
         verifyMove(NewPos, Visited, Result),
@@ -98,17 +97,22 @@ findGroup_(L1,L2,Rand) :-
         (Rand >= 90), (Rand < 97) -> (L1 is 401, L2 is 750);
         (Rand >= 98), (Rand < 100) -> (L1 is 751, L2 is 1000).
 
-crossover(Population, NewPopulation, ChromossomeSize) :-crossOver_(Population, ChromossomeSize, NewPopulation, 0).
+crossover(Population, NewPopulation, ChromossomeSize) :-crossover_(Population, ChromossomeSize, NewPopulation, 0).
         
-crossOver_(_,_,[],1000).
-crossOver_(Population, ChromossomeSize, [Son|NewPopulation], N) :-
+crossover_(_,_,[],1000).
+crossover_(Population, ChromossomeSize, [individual(10**6, Son)|NewPopulation], N) :-
                                     findGroup(L1,L2),
                                     findGroup(R1,R2),
                                     newRandom(L1, R1, RandDaddy), getIndex(RandDaddy, Population, Daddy),
                                     newRandom(L2, R2, RandMommy), getIndex(RandMommy, Population, Mommy),
-                                    crossOverIndividual(ChromossomeSize, Daddy, Mommy, Son),
+                                    crossOverIndividual(ChromossomeSize, Daddy, Mommy, Son_),
+                                    apllyMutation(Son_, Son, 0.1),
                                     K is N + 1,
-                                    crossOver_(Population, ChromossomeSize, NewPopulation, K).
+                                    crossover_(Population, ChromossomeSize, NewPopulation, K).
+
+apllyMutation(Moves, NewMoves, Chance) :- C is round(Chance * 100), random_between(1, 100, Rand),
+        (C >= Rand) -> (mutation(Moves, NewMoves));
+        (NewMoves is Moves).
 
 mutation(Moves, NewMoves) :- length(Moves, Leng), Len is Leng-1, newRandom(0,10,R) -> (
         isEmpty(Moves), NewMoves = [];

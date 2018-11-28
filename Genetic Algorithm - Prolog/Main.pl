@@ -25,7 +25,7 @@ drawIndividual([M|Moves], Maze, (Xc, Yc)) :-
 drawIndividual(individual(_, Moves)) :- 
     maze(Maze), spaw(Xs, Ys), drawIndividual(Moves, Maze, (Xs, Ys)).
 
-main :- maze(Maze), ln, showList(Maze), ln,
+main :- maze(5,Maze), ln, showList(Maze), ln,
         initPopulation(5, Population, 5),
         showList(Population), ln,
         calculateFitnessPopulation(Population, NewPopulation),
