@@ -61,11 +61,12 @@ writeln("Flavio: o DEBUGGER quântico").
 
 % Calcula o fitness, ordena a população, pega o mais fitness, printa os movimentos do mais fitness, pega o fitness do individuo, verifica se ele solucionou o labirinto. Se sim, termina a recursão.
 % se não terminou a recursão, faz o crossover e chama solve de novo.
-solve(Maze,Population,Individuo, ChromossomeSize):- 
+
+solve(Maze,Population, individual(Fitness, Moves), ChromossomeSize):- 
     calculateFitnessPopulation(Population, NewPopulation),sortPopulation(NewPopulation,SortedPopulation),
-    getIndex(0,SortedPopulation, Individual),getIndex(1,Individual,Moves), write("Geracao X: "), writeln(Moves),
-    getIndex(0,Individual,Fitness) -> (Fitness > 1000000, Individuo is Individual);
-    crossover(SortedPopulation,PopulationCrossover, ChromossomeSize), solve(Maze,PopulationCrossover,Individuo, ChromossomeSize).
+    first(SortedPopulation, individual(FitnessFirst, MovesFirst)), write("Geracao X: "), writeln(MovesFirst),
+    (Fitness < 1000000) -> (crossover(SortedPopulation,PopulationCrossover, ChromossomeSize), solve(Maze,PopulationCrossover,individual(FitnessFirst, MovesFirst), ChromossomeSize));
+    Fitness is FitnessFirst; Moves is MovesFirst.
 
 main :-
     % Pega o tamanho do labirinto, gera o labirinto, calcula o chromossomeSize, inicia uma população de 1000 individuos baseados nesses valores.
@@ -74,10 +75,6 @@ main :-
     solve(Maze,Population, Individuo, ChromossomeSize),
     % Desenha o individuo solucionando o labirinto. Ajeitar o método.
     drawIndividual(Maze, Individuo).
-
-
-
-
 
 mainTest :- maze(5,Maze), ln, showList(Maze), ln,
         initPopulation(5, Population, 5),

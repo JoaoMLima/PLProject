@@ -7,7 +7,8 @@
     isEmpty/1,
     revert/2,
     revertAux/3,
-    insertAtEnd/3
+    insertAtEnd/3,
+    first/2
 ]).
 
 contains(_, [], false).
@@ -35,3 +36,5 @@ revertAux([],Acc,Acc).
 revertAux([H|T],Acc,R) :- revertAux(T,[H|Acc],R).
 
 insertAtEnd(X,Y,Z) :- append(Y,[X],Z).
+
+first([Head|_], Head).
