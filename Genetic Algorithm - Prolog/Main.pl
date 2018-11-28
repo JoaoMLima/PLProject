@@ -22,8 +22,62 @@ drawIndividual([M|Moves], Maze, (Xc, Yc)) :-
     isValidMove(Xr, Yr) -> (cls, drawPoint((Xr, Yr), Maze), sleep(0.5), drawIndividual(Moves, Maze, (Xr, Yr)));
     (cls, drawPoint((Xc, Yc), Maze), sleep(0.5), drawIndividual(Moves, Maze, (Xc, Yc))).
 
+%Corrigir isso aqui pra ficar maneiro.
 drawIndividual(individual(_, Moves)) :- 
     maze(Maze), spaw(Xs, Ys), drawIndividual(Moves, Maze, (Xs, Ys)).
+
+showTitle():- cls, writeln("#####################################################################################################################"),
+sleep(0.3),
+writeln(".___  ___.      ___      ________   _______         _______.  ______    __      ____    ____  _______ .______      "),
+sleep(0.3),
+writeln("|   \\/   |     /   \\    |       /  |   ____|       /       | /  __  \\  |  |     \\   \\  /   / |   ____||   _  \\     "),
+sleep(0.3),
+writeln("|  \\  /  |    /  ^  \\   `---/  /   |  |__         |   (----`|  |  |  | |  |      \\   \\/   /  |  |__   |  |_)  |    "),
+sleep(0.3),
+writeln("|  |\\/|  |   /  /_\\  \\     /  /    |   __|         \\   \\    |  |  |  | |  |       \\      /   |   __|  |      /     "),
+sleep(0.3),
+writeln("|  |  |  |  /  _____  \\   /  /----.|  |____    .----)   |   |  `--'  | |  `----.   \\    /    |  |____ |  |\\ \\----."),
+sleep(0.3),
+writeln("|__|  |__| /__/     \\__\\ /________||_______|   |_______/     \\______/  |_______|    \\__/     |_______|| _| `._____|"),
+sleep(0.3),
+writeln("\n#####################################################################################################################\n"),
+sleep(0.5),
+writeln("                                                                                             FINAL EDITION ™"),
+sleep(1),
+writeln("O SOLUCIONADOR MAIS EFICIENTE DO MERCADO PROPORCIONADO PELO GRUPO:\n"),
+sleep(2),
+writeln("Wesley: o DEUS da recursão"),
+sleep(1),
+writeln("Eduardo: o MUTANTE com chicungunha"),
+sleep(1),
+writeln("João Marcos: o GERADOR de caminhos"),
+sleep(1),
+writeln("Henrique: o FINISHER burocrático"),
+sleep(1),
+writeln("Flavio: o DEBUGGER quântico"). 
+
+% Fazer Esse Método
+%chromossomeSize(Size,Maze,ChromossomeSize):-
+
+% Calcula o fitness, ordena a população, pega o mais fitness, printa os movimentos do mais fitness, pega o fitness do individuo, verifica se ele solucionou o labirinto. Se sim, termina a recursão.
+% se não terminou a recursão, faz o crossover e chama solve de novo.
+solve(Maze,Population,Individuo, ChromossomeSize):- 
+    calculateFitnessPopulation(Population, NewPopulation),sortPopulation(NewPopulation,SortedPopulation),
+    getIndex(0,SortedPopulation, Individual),getIndex(1,Individual,Moves), write("Geracao X: "), writeln(Moves),
+    getIndex(0,Individual,Fitness) -> (Fitness > 1000000, Individuo is Individual);
+    crossover(SortedPopulation,PopulationCrossover, ChromossomeSize), solve(Maze,PopulationCrossover,Individuo, ChromossomeSize).
+
+main :-
+    % Pega o tamanho do labirinto, gera o labirinto, calcula o chromossomeSize, inicia uma população de 1000 individuos baseados nesses valores.
+    read(Size), maze(Size, Maze), chromossomeSize(Size, Maze, ChromossomeSize), initPopulation(1000, Population, ChromossomeSize),
+    % Começa a solucionar o labirinto, dado o labirinto e sua população inicial. Ao fim retorna um individuo que terminou o labirinto.
+    solve(Maze,Population, Individuo, ChromossomeSize),
+    % Desenha o individuo solucionando o labirinto. Ajeitar o método.
+    drawIndividual(Maze, Individuo).
+
+
+
+
 
 main :- maze(5,Maze), ln, showList(Maze), ln,
         initPopulation(5, Population, 5),
