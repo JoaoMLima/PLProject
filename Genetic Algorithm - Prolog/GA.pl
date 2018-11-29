@@ -12,7 +12,14 @@
         addMoves/3,
         sortPopulation/2,
         sortPopulationRemoving/2,
-        crossover/3
+        crossover/3,
+        findGroup/2,
+        findGroup_/3,
+        coMommy/5,
+        addCoherentMoves/3,
+        crossOverIndividual/4,
+        crossOverIndividual_/4,
+        mutation/2
         ]
 ).
 :- use_module('Maze').
@@ -94,8 +101,8 @@ findGroup(L1,L2) :- random_between(0,99,Rand), findGroup_(L1,L2,Rand).
 findGroup_(L1,L2,Rand) :-
         (Rand >= 0), (Rand < 50) -> (L1 is 0, L2 is 10);
         (Rand >= 50), (Rand < 75) -> (L1 is 11, L2 is 250);
-        (Rand >= 75), (Rand < 89) -> (L1 is 251, L2 is 400);
-        (Rand >= 90), (Rand < 97) -> (L1 is 401, L2 is 750);
+        (Rand >= 75), (Rand < 90) -> (L1 is 251, L2 is 400);
+        (Rand >= 90), (Rand < 98) -> (L1 is 401, L2 is 750);
         (Rand >= 98), (Rand < 100) -> (L1 is 751, L2 is 1000).
 
 crossover(Population, NewPopulation, ChromossomeSize) :-crossover_(Population, ChromossomeSize, NewPopulation, 0).
@@ -135,7 +142,7 @@ coherentMoves("L", ["L","D","U"]).
 
 crossOverIndividual(ChromossomeSize, individual(_,_,MovesMommy), individual(_,_,MovesDaddy), CompletedSon) :-
         random_between(0,1,Rand),
-        (Rand =:= 0) -> crossOverIndividual_(ChromossomeSize, MovesMommy, MovesDaddy, CompletedSon);
+        (Rand == 0) -> crossOverIndividual_(ChromossomeSize, MovesMommy, MovesDaddy, CompletedSon);
         crossOverIndividual_(ChromossomeSize, MovesDaddy, MovesMommy, CompletedSon).
 
 crossOverIndividual_(ChromossomeSize, MovesMommy, MovesDaddy, CompletedSon) :-
@@ -168,5 +175,5 @@ pickCoherentMoves(Move, CoMove) :- coherentMoves(Move, CM), random_between(0, 2,
 %coMommy(4, ["U", "L", "L", "D", "R"], Son, Stop, Last).
 %addCoherentMoves(["U", "L", "L", "D", "R"], "R", CMSon).
 %coMommy(3, ["U", "L", "L", "D", "R"], Son, StoppingPoint).
-%crossOverIndividual(5,individual(_,["U", "L", "L", "D", "R"]), individual(_,["D", "R", "U", "L", "U"]), Son).
+%crossOverIndividual(5,individual(2,_,["U", "L", "L", "D", "R"]), individual(2,_,["D", "R", "U", "L", "U"]), Son).
 %initPopulation(5, Population, 1000), crossover(Population, NewPopulation, 5), crossover(NewPopulation, Np, 5).
