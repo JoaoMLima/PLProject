@@ -94,11 +94,13 @@ solve(Maze,Population,Ind,ChromossomeSize,GenNumber):-
     calculateFitnessPopulation(Population,FitnessPopulation), 
     sortPopulation(FitnessPopulation,SortedPopulation),
     crossover(SortedPopulation, NewPopulation, ChromossomeSize),
-    first(SortedPopulation, individual(Fitness, Moves)),
-    last(SortedPopulation, individual(LFit, LMov)),
+    first(SortedPopulation, individual(Gen, Fitness, Moves)),
+    last(SortedPopulation, individual(LGen, LFit, LMov)),
     %getIndex(999, SortedPopulation, individual(LFit, LMov)),
-    write("Geracao: "), write(GenNumber), write(": "), write(Fitness), write(" - "), writeln(Moves),
-    write("Geracao: "), write(GenNumber), write(": "), write(LFit), write(" - "), writeln(LMov),
+    write("Geracao: "), write(GenNumber), write(": "), write(Gen), write(" - "), write(Fitness), write(" - "), writeln(Moves),
+    write("Geracao: "), write(GenNumber), write(": "), write(LGen), write(" - "), write(LFit), write(" - "), writeln(LMov),
+    RetractGen is Gen -1,
+    retractall(individual(RetractGen, _, _)),
     aux(Maze, NewPopulation, Ind, ChromossomeSize, GenNumber, individual(Fitness, Moves)).
 
 aux(Maze, SortedPopulation, Ind, ChromossomeSize, GenNumber, individual(Fitness, Moves)):- 
@@ -111,8 +113,8 @@ readNumber(Number) :- read_line_to_codes(user_input, Codes),
 main :-   
     % Pega o tamanho do labirinto, gera o labirinto, calcula o chromossomeSize, inicia uma população de 1000 individuos baseados nesses valores.
     readNumber(Size), maze(Size, Maze), ln, showList(Maze), ln, 
-    buildIndividuo(10, Individual), drawIndividual(Maze, Individual),
-    ChromossomeSize is 5, initPopulation(ChromossomeSize, Population, 1000),
+    %(10, Individual), drawIndividual(Maze, Individual),
+    ChromossomeSize is 10, initPopulation(ChromossomeSize, Population, 1000),
     % Começa a solucionar o labirinto, dado o labirinto e sua população inicial. Ao fim retorna um individuo que terminou o labirinto.
     solve(Maze,Population, Individuo, ChromossomeSize, 0), sleep(5),
     % Desenha o individuo solucionando o labirinto. Ajeitar o método.

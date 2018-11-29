@@ -19,7 +19,7 @@
 :- use_module('Util').
 :- use_module(library(random)).
 
-individual(fitness, moves).
+individual(gen, fitness, moves).
 populationSize(1000).
 
 % Sort population without removing elements with equal keys (Fitness). Descending.
@@ -47,12 +47,12 @@ randomMove(Move) :- random_between(0, 3, Rand), direction(Rand, Move).
 randomMoves([Move], 1) :- randomMove(Move).
 randomMoves([M|RandMoves], Len) :- randomMove(M), K is Len - 1, randomMoves(RandMoves, K).
 
-buildIndividuo(ChromossomeSize, individual(Fitness, Moves)) :- Fitness is 10**6, randomMoves(Moves, ChromossomeSize).
+buildIndividuo(ChromossomeSize, individual(0,Fitness, Moves)) :- Fitness is 10**6, randomMoves(Moves, ChromossomeSize).
 
 initPopulation(ChromossomeSize, [Individuo], 1) :- buildIndividuo(ChromossomeSize, Individuo).
 initPopulation(ChromossomeSize, [I|Individuos], Len) :- buildIndividuo(ChromossomeSize, I), K is Len - 1, initPopulation(ChromossomeSize, Individuos, K).
 
-calculateFitnessIndividual(individual(Fitness, Moves), individual(NewFitness, Moves)) :- mazeSpawn(Pos), calculateFitnessIndividualAux(Fitness, Moves, Pos, _, NewFitness).
+calculateFitnessIndividual(individual(Gen, Fitness, Moves), individual(Gen, NewFitness, Moves)) :- mazeSpawn(Pos), calculateFitnessIndividualAux(Fitness, Moves, Pos, _, NewFitness).
 
 calculateFitnessIndividualAux(CurrentFitness, _, Pos,_, NewFitness) :- mazeExit(Pos), NewFitness is (CurrentFitness * (10**6)).
 calculateFitnessIndividualAux(CurrentFitness,[],_,_,CurrentFitness).
@@ -101,12 +101,13 @@ findGroup_(L1,L2,Rand) :-
 crossover(Population, NewPopulation, ChromossomeSize) :-crossover_(Population, ChromossomeSize, NewPopulation, 0).
         
 crossover_(_,_,[],1000).
-crossover_(Population, ChromossomeSize, [individual(1000000, Son)|NewPopulation], N) :-
+crossover_(Population, ChromossomeSize, [individual(GenSon, 1000000, Son)|NewPopulation], N) :-
                                     findGroup(L1,L2),
                                     findGroup(R1,R2),
                                     newRandom(L1, R1, RandDaddy), getIndex(RandDaddy, Population, Daddy),
-                                    newRandom(L2, R2, RandMommy), getIndex(RandMommy, Population, Mommy),
-                                    crossOverIndividual(ChromossomeSize, Daddy, Mommy, Son),
+                                    newRandom(L2, R2, RandMommy), getIndex(RandMommy, Population, individual(Gen, FitnessMom, MovesMom)),
+                                    crossOverIndividual(ChromossomeSize,individual(Gen, FitnessMom, MovesMom), Daddy, Son),
+                                    GenSon is Gen + 1,
                                     %apllyMutation(Son_, Son, 0.1),
                                     K is N + 1,
                                     crossover_(Population, ChromossomeSize, NewPopulation, K).
@@ -132,7 +133,7 @@ coherentMoves("D", ["D","L","R"]).
 coherentMoves("R", ["R","D","U"]).
 coherentMoves("L", ["L","D","U"]).
 
-crossOverIndividual(ChromossomeSize, individual(_,MovesMommy), individual(_,MovesDaddy), CompletedSon) :-
+crossOverIndividual(ChromossomeSize, individual(_,_,MovesMommy), individual(_,_,MovesDaddy), CompletedSon) :-
         random_between(0,1,Rand),
         (Rand =:= 0) -> crossOverIndividual_(ChromossomeSize, MovesMommy, MovesDaddy, CompletedSon);
         crossOverIndividual_(ChromossomeSize, MovesDaddy, MovesMommy, CompletedSon).
@@ -157,7 +158,7 @@ pickCoherentMoves(Move, CoMove) :- coherentMoves(Move, CM), random_between(0, 2,
 % randomMoves(Moves, 5).
 % buildIndividuo(5, Individuo).
 % initPopulation(5, Population, 10).
-% buildIndividuo(5, individual(Fitness, Moves)), calculateFitnessIndividualAux(Fitness, Moves, (3,3), Visited, NewFitness).
+% buildIndividuo(5, individual(Gen, Fitness, Moves)), calculateFitnessIndividualAux(Fitness, Moves, (3,3), Visited, NewFitness).
 % buildIndividuo(5, Individuo), calculateFitnessIndividual(Individuo, NewIndividuo).
 % initPopulation(5, Population, 5), calculateFitnessPopulation(Population, NewPopulation).
 %calculateFitnessIndividualAux(1000000, ["D", "R", "U", "L", "U"], (3, 3), Visited, NewFitness).
@@ -168,4 +169,4 @@ pickCoherentMoves(Move, CoMove) :- coherentMoves(Move, CM), random_between(0, 2,
 %addCoherentMoves(["U", "L", "L", "D", "R"], "R", CMSon).
 %coMommy(3, ["U", "L", "L", "D", "R"], Son, StoppingPoint).
 %crossOverIndividual(5,individual(_,["U", "L", "L", "D", "R"]), individual(_,["D", "R", "U", "L", "U"]), Son).
-%initPopulation(5, Population, 1000), crossover(Population, NewPopulation, 5).
+%initPopulation(5, Population, 1000), crossover(Population, NewPopulation, 5), crossover(NewPopulation, Np, 5).
