@@ -38,3 +38,6 @@ revertAux([H|T],Acc,R) :- revertAux(T,[H|Acc],R).
 insertAtEnd(X,Y,Z) :- append(Y,[X],Z).
 
 first([Head|_], Head).
+
+last([H|[]], H).
+last([_|T], L) :- last(T, L).

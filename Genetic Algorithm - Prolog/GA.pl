@@ -101,19 +101,19 @@ findGroup_(L1,L2,Rand) :-
 crossover(Population, NewPopulation, ChromossomeSize) :-crossover_(Population, ChromossomeSize, NewPopulation, 0).
         
 crossover_(_,_,[],1000).
-crossover_(Population, ChromossomeSize, [individual(10**6, Son)|NewPopulation], N) :-
+crossover_(Population, ChromossomeSize, [individual(1000000, Son)|NewPopulation], N) :-
                                     findGroup(L1,L2),
                                     findGroup(R1,R2),
                                     newRandom(L1, R1, RandDaddy), getIndex(RandDaddy, Population, Daddy),
                                     newRandom(L2, R2, RandMommy), getIndex(RandMommy, Population, Mommy),
-                                    crossOverIndividual(ChromossomeSize, Daddy, Mommy, Son_),
-                                    apllyMutation(Son_, Son, 0.1),
+                                    crossOverIndividual(ChromossomeSize, Daddy, Mommy, Son),
+                                    %apllyMutation(Son_, Son, 0.1),
                                     K is N + 1,
                                     crossover_(Population, ChromossomeSize, NewPopulation, K).
 
 apllyMutation(Moves, NewMoves, Chance) :- C is round(Chance * 100), random_between(1, 100, Rand),
         (C >= Rand) -> (mutation(Moves, NewMoves));
-        (NewMoves is Moves).
+        (NewMoves = Moves).
 
 mutation(Moves, NewMoves) :- length(Moves, Leng), Len is Leng-1, newRandom(0,10,R) -> (
         isEmpty(Moves), NewMoves = [];

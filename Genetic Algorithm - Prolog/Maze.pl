@@ -56,4 +56,4 @@ maze(Len, M) :- assert(lengthMaze(Len)), mazeGen(), getMazeLine(0, M).
 getMazeLine(I, []) :- lengthMaze(Len), I >= Len.
 getMazeLine(I, M) :- NextI is I + 1, getMazeLine(NextI, NextM), getMazeCol(I, 0, L), M = [L|NextM].
 getMazeCol(_, J, []) :- lengthMaze(Len), J >= Len.
-getMazeCol(I, J, L) :- NextJ is J + 1, getMazeCol(I, NextJ, NextL), icon((J, I), Ch), L = [Ch|NextL].
+getMazeCol(I, J, L) :- NextJ is J + 1, getMazeCol(I, NextJ, NextL), icon((I, J), Ch), L = [Ch|NextL].
