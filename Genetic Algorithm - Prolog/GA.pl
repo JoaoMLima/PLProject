@@ -113,15 +113,11 @@ crossover_(Population, ChromossomeSize, [individual(GenSon, 1000000, Son)|NewPop
                                     findGroup(R1,R2),
                                     newRandom(L1, R1, RandDaddy), getIndex(RandDaddy, Population, Daddy),
                                     newRandom(L2, R2, RandMommy), getIndex(RandMommy, Population, individual(Gen, FitnessMom, MovesMom)),
-                                    crossOverIndividual(ChromossomeSize,individual(Gen, FitnessMom, MovesMom), Daddy, Son),
+                                    crossOverIndividual(ChromossomeSize,individual(Gen, FitnessMom, MovesMom), Daddy, Son1),
                                     GenSon is Gen + 1,
-                                    %apllyMutation(Son_, Son, 0.1),
+                                    mutation(Son1, Son),
                                     K is N + 1,
                                     crossover_(Population, ChromossomeSize, NewPopulation, K).
-
-apllyMutation(Moves, NewMoves, Chance) :- C is round(Chance * 100), random_between(1, 100, Rand),
-        (C >= Rand) -> (mutation(Moves, NewMoves));
-        (NewMoves = Moves).
 
 mutation(Moves, NewMoves) :- length(Moves, Leng), Len is Leng-1, newRandom(0,10,R) -> (
         isEmpty(Moves), NewMoves = [];
