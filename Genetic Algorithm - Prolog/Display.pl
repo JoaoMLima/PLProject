@@ -1,13 +1,14 @@
 :- module('Display', [
     showTitle/0,
-    drawIndividual_/3,
-    drawIndividual/3,
+    drawIndividual_/4,
+    drawIndividual/2,
     cls/0,
     ln/0
 ]).
 
 :- use_module('Util').
 :- use_module('GA').
+:- use_module('Maze').
 
 cls :- write('\e[H\e[2J').
 ln :- writeln("").
@@ -18,13 +19,14 @@ drawAsterisk(0, [_|L], ["*"|L]).
 drawPoint((0, Y), [L|Maze]) :- drawAsterisk(Y, L, NewL), writeln(NewL), showList(Maze).
 drawPoint((X, Y), [L|Maze]) :- K is X - 1, writeln(L), drawPoint((K, Y), Maze).
 
-drawIndividual_(_,_,[]).
-drawIndividual_(Maze, S, [M|Moves]) :-
+drawIndividual_(_, (Xe, Ye), (Xe, Ye), _).
+drawIndividual_(_,_,_,[]).
+drawIndividual_(Maze, S, E, [M|Moves]) :-
     makeAMove(S, M, Result),
-    (isValidMove(Result), cls, drawPoint(Result, Maze), sleep(0.5), drawIndividual_(Maze, Result, Moves));
-    (cls, drawPoint(S, Maze), sleep(0.5), drawIndividual_(Maze, S, Moves)).
+    (isValidMove(Result)) -> (cls, drawPoint(Result, Maze), sleep(0.5), drawIndividual_(Maze, Result, E, Moves));
+    (cls, drawPoint(S, Maze), sleep(0.5), drawIndividual_(Maze, S, E, Moves)).
 
-drawIndividual(Maze, Spawn, individual(_,_,Moves)) :- drawIndividual_(Maze, Spawn, Moves).
+drawIndividual(Maze, individual(_,_,Moves)) :- mazeSpawn(Spawn), mazeExit(Exit), drawIndividual_(Maze, Spawn, Exit, Moves).
 
 showTitle():- cls, writeln("#####################################################################################################################"),
 sleep(0.3),

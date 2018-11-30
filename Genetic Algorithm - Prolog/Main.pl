@@ -15,7 +15,7 @@ chromossomeSize(ChromossomeSize):- findall(X, freeSpace(X), Xs), length(Xs, Chro
 
 applyMethodToThePopulation(Population, BestIndividual, ChromossomeSize) :-
     crossover(Population, NewPopulation, ChromossomeSize),
-    calculateFitnessPopulation(Population, CalculatedPopulation),
+    calculateFitnessPopulation(NewPopulation, CalculatedPopulation),
     first(CalculatedPopulation, BestIndividualGen),
     BestIndividualGen = individual(Gen, Fitness, Moves),
     write("Geração "), write(Gen), write(":"), write(Fitness), writeln(Moves),
@@ -35,7 +35,7 @@ main :-
     readNumber(Size), maze(Size, Maze), ln, showList(Maze), ln, 
     chromossomeSize(ChromossomeSize), initPopulation(ChromossomeSize, Population, 1000),
     solve(Population, Individuo, ChromossomeSize), sleep(5),
-    mazeSpawn(S), drawIndividual(Maze,S,Individuo), writeln(Individuo).
+    drawIndividual(Maze,Individuo), writeln(Individuo).
 
 mainTest :- maze(5,Maze), ln, showList(Maze), ln,
         initPopulation(5, Population, 5),
