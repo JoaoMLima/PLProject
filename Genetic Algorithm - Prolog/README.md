@@ -9,6 +9,6 @@ To execute the GA execute the command:
 ```
 swipl Main.pl
 ```
-And then, input the maze size (odd number).
+And then, input the maze size (odd number and greater or equal to 3).
 
 This code uses plenty of recursion, so go get some borrowed memory for the stack.
