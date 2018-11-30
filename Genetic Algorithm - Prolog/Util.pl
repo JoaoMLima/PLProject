@@ -8,7 +8,8 @@
     revert/2,
     revertAux/3,
     insertAtEnd/3,
-    first/2
+    first/2,
+    showList/1
 ]).
 
 contains(_, [], false).
@@ -41,3 +42,8 @@ first([Head|_], Head).
 
 last([H|[]], H).
 last([_|T], L) :- last(T, L).
+
+showList([]).
+showList([Head|Tail]) :-
+    writeln(Head),
+    showList(Tail).

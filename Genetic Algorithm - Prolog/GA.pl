@@ -2,6 +2,7 @@
         getMove/2,
         makeAMove/3,
         isValidMove/2,
+        isValidMove/1,
         buildIndividuo/2,
         initPopulation/3,
         calculateFitnessIndividual/2,
