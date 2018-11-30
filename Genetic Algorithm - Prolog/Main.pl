@@ -19,7 +19,7 @@ applyMethodToThePopulation(Population, BestIndividual, ChromossomeSize) :-
     first(CalculatedPopulation, BestIndividualGen),
     BestIndividualGen = individual(Gen, Fitness, Moves),
     write("Geração "), write(Gen), write(":"), write(Fitness), writeln(Moves),
-    ((Fitness < 1000000) -> applyMethodToThePopulation(NewPopulation, BestIndividual, ChromossomeSize);
+    ((Fitness < 1000000) -> applyMethodToThePopulation(CalculatedPopulation, BestIndividual, ChromossomeSize);
     BestIndividual = BestIndividualGen).
 
 solve(Population, BestIndividual, ChromossomeSize) :-
