@@ -8,7 +8,7 @@
     clearMaze/0
     ]).
 
-:- dynamic mazeExit/1, freeSpace/1, mazeSpawn/1, lengthMaze/1, root/1, dist/2.
+:- dynamic mazeExit/1, freeSpace/1, mazeSpawn/1, lengthMaze/1, root/1, dist/2, maze/2, dist/2.
 
 sumVector((X1, Y1), (X2, Y2), (X3, Y3)) :- X3 is X1 + X2, Y3 is Y1 + Y2.
 move(0, (-2, 0)).
@@ -31,7 +31,8 @@ getMoves([H|T], [Mv|RestMvs]) :- getMoves(T, RestMvs), move(H, Mv).
 randomFourMoves(Mvs) :- random_permutation([0, 1, 2, 3], List), getMoves(List, Mvs).
 
 %Maze recursions
-clearMaze() :- retractall(mazeExit(_)), retractall(mazeSpawn(_)), retractall(freeSpace(_)), retractall(root(_)), retractall(dist(_, _)).
+clearMaze() :- retractall(mazeExit(_)), retractall(mazeSpawn(_)), retractall(freeSpace(_)), retractall(root(_)),
+    retractall(dist(_, _)), retractall(maze(_, _)).
 
 setExit() :- lengthMaze(Len), HalfLen is (Len - 1) / 2, random(0, HalfLen, R1), random(0, 2, R2), random(0, 2, R3),
     Coord1 is R1 * 2 + 1, Coord2 is R2 * (Len - 1), T1 is Coord2 - 1, abs(T1, Coord3), 

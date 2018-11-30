@@ -9,7 +9,8 @@
     revertAux/3,
     insertAtEnd/3,
     first/2,
-    showList/1
+    showList/1,
+    readNumber/1
 ]).
 
 contains(_, [], false).
@@ -47,3 +48,7 @@ showList([]).
 showList([Head|Tail]) :-
     writeln(Head),
     showList(Tail).
+
+readNumber(Number) :- read_line_to_codes(user_input, Codes),
+                      string_to_atom(Codes, Atom),
+                      atom_number(Atom, Number).

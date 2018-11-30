@@ -7,7 +7,6 @@
         initPopulation/3,
         calculateFitnessIndividual/2,
         calculateFitnessPopulation/2,
-        concat/3,
         mutation/2,
         flipMove/3,
         addMoves/3,
@@ -31,10 +30,10 @@ individual(gen, fitness, moves).
 populationSize(1000).
 
 % Sort population without removing elements with equal keys (Fitness). Descending.
-sortPopulation(Population,SortedPopulation):- sort(1, @>=, Population, SortedPopulation).
+sortPopulation(Population,SortedPopulation):- sort(2, @>=, Population, SortedPopulation).
 
 % Sort population removing elements with equal keys (Moves). Ascending.
-sortPopulationRemoving(Population,SortedPopulation):- sort(2, @<, Population,SortedPopulation).
+sortPopulationRemoving(Population,SortedPopulation):- sort(3, @<, Population,SortedPopulation).
 
 makeAMove(Pos, Direction, Result) :- getMove(Direction, CoorMove), sumVector(Pos, CoorMove, Result).
 isValidMove(Pos) :- freeSpace(Pos).
@@ -63,7 +62,7 @@ initPopulation(ChromossomeSize, [I|Individuos], Len) :- buildIndividuo(Chromosso
 calculateFitnessIndividual(individual(Gen, Fitness, Moves), individual(Gen, NewFitness, Moves)) :- mazeSpawn(Pos), calculateFitnessIndividualAux(Fitness, Moves, Pos, _, NewFitness).
 
 calculateFitnessIndividualAux(CurrentFitness, _, Pos,_, NewFitness) :- mazeExit(Pos), NewFitness is (CurrentFitness * (10**6)).
-calculateFitnessIndividualAux(CurrentFitness,[],_,_,CurrentFitness).
+calculateFitnessIndividualAux(CurrentFitness,[], Pos,_,NewFitness) :- dist(Pos, D), NewFitness is CurrentFitness - (D * 1000).
 calculateFitnessIndividualAux(CurrentFitness, [M|Moves], Pos, Visited, NewFitness) :-
         makeAMove(Pos, M, NewPos),
         verifyMove(NewPos, Visited, Result),
@@ -72,8 +71,9 @@ calculateFitnessIndividualAux(CurrentFitness, [M|Moves], Pos, Visited, NewFitnes
         (Result == 3, F is CurrentFitness - 200, calculateFitnessIndividualAux(F, Moves, NewPos, [NewPos|Visited], NewFitness));
         (Result == 4, F is CurrentFitness - 400, calculateFitnessIndividualAux(F, Moves, Pos, [NewPos|Visited], NewFitness))).
 
-calculateFitnessPopulation([], []).
-calculateFitnessPopulation([I|Individuos], [NewIndividuo|NewPopulation]) :- calculateFitnessIndividual(I, NewIndividuo), calculateFitnessPopulation(Individuos, NewPopulation).
+calculateFitnessPopulation(Population, NewPopulation) :- calculateFitnessPopulation_(Population, CalculatedPopulation), sortPopulationRemoving(CalculatedPopulation, PopulationSet), sortPopulation(PopulationSet, NewPopulation).
+calculateFitnessPopulation_([], []).
+calculateFitnessPopulation_([I|Individuos], [NewIndividuo|NewPopulation]) :- calculateFitnessIndividual(I, NewIndividuo), calculateFitnessPopulation(Individuos, NewPopulation).
 
 verifyMove(Pos, Visited, Result) :-
         contains(Pos, Visited, C1),
@@ -106,10 +106,10 @@ findGroup_(L1,L2,Rand) :-
         (Rand >= 90), (Rand < 98) -> (L1 is 401, L2 is 750);
         (Rand >= 98), (Rand < 100) -> (L1 is 751, L2 is 1000).
 
-crossover(Population, NewPopulation, ChromossomeSize) :-crossover_(Population, ChromossomeSize, NewPopulation, 0).
+crossover(Population, NewPopulation, ChromossomeSize) :- crossover_(NewPopulation, 0, Population, ChromossomeSize).
         
-crossover_(_,_,[],1000).
-crossover_(Population, ChromossomeSize, [individual(GenSon, 1000000, Son)|NewPopulation], N) :-
+crossover_([],1000,_,_).
+crossover_([individual(GenSon, 1000000, Son)|NewPopulation], N, Population, ChromossomeSize) :- 
                                     findGroup(L1,L2),
                                     findGroup(R1,R2),
                                     newRandom(L1, R1, RandDaddy), getIndex(RandDaddy, Population, Daddy),
@@ -118,7 +118,7 @@ crossover_(Population, ChromossomeSize, [individual(GenSon, 1000000, Son)|NewPop
                                     GenSon is Gen + 1,
                                     mutation(Son1, Son),
                                     K is N + 1,
-                                    crossover_(Population, ChromossomeSize, NewPopulation, K).
+                                    crossover_( NewPopulation, K, Population, ChromossomeSize).
 
 mutation(Moves, NewMoves) :- length(Moves, Leng), Len is Leng-1, newRandom(0,10,R) -> (
         isEmpty(Moves), NewMoves = [];
