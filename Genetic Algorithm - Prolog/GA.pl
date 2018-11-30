@@ -71,7 +71,7 @@ calculateFitnessIndividualAux(CurrentFitness, [M|Moves], Pos, Visited, NewFitnes
         (Result == 3, F is CurrentFitness - 200, calculateFitnessIndividualAux(F, Moves, NewPos, [NewPos|Visited], NewFitness));
         (Result == 4, F is CurrentFitness - 400, calculateFitnessIndividualAux(F, Moves, Pos, [NewPos|Visited], NewFitness))).
 
-calculateFitnessPopulation(Population, NewPopulation) :- calculateFitnessPopulation_(Population, CalculatedPopulation), sortPopulationRemoving(CalculatedPopulation, PopulationSet), sortPopulation(PopulationSet, NewPopulation).
+calculateFitnessPopulation(Population, NewPopulation) :- calculateFitnessPopulation_(Population, CalculatedPopulation), sortPopulation(CalculatedPopulation, NewPopulation).
 calculateFitnessPopulation_([], []).
 calculateFitnessPopulation_([I|Individuos], [NewIndividuo|NewPopulation]) :- calculateFitnessIndividual(I, NewIndividuo), calculateFitnessPopulation(Individuos, NewPopulation).
 
@@ -85,18 +85,6 @@ verifyMove(Pos, Visited, Result) :-
 
 groups([[0, 10],[11, 250],[251, 400],[401, 750],[751,1000]]).
 groupsChance([0.5, 0.25, 0.15, 0.08, 0.02]).
-
-/*
-initGroupsList(GroupList) :- initGroupsList_(_,0,GroupList).
-initGroupsList_(GroupList,5, GroupList).
-initGroupsList_(GroupList, N, Output) :- groupsChance(G), getIndex(N,G,Chance), C is round(Chance*100),
-                                 repl(N,C,List), concat(GroupList, List, L), K is N + 1,
-                                 initGroupsList_(L, K, Output).
-
-repl(X, N, L) :-
-        length(L, N),
-        maplist(=(X), L).
-*/
 
 findGroup(L1,L2) :- random_between(0,99,Rand), findGroup_(L1,L2,Rand).
 findGroup_(L1,L2,Rand) :-
@@ -155,22 +143,3 @@ coMommy(CrossOverPoint, [M|MovesMommy], [M|MommysSon], StoppingPoint, Last) :-
 addCoherentMoves(Son, Last, CMSon) :- coherentMoves(Last, CM), random_between(0, 2, Rand), getIndex(Rand, CM, CoMove), insertAtEnd(CoMove, Son, CMSon).
 
 pickCoherentMoves(Move, CoMove) :- coherentMoves(Move, CM), random_between(0, 2, Rand), getIndex(Rand, CM, CoMove).
-
-% Testando
-% sumVector((1, 5), (0, 1), Coor).
-% randomMove(Move).
-% randomMoves(Moves, 5).
-% buildIndividuo(5, Individuo).
-% initPopulation(5, Population, 10).
-% buildIndividuo(5, individual(Gen, Fitness, Moves)), calculateFitnessIndividualAux(Fitness, Moves, (3,3), Visited, NewFitness).
-% buildIndividuo(5, Individuo), calculateFitnessIndividual(Individuo, NewIndividuo).
-% initPopulation(5, Population, 5), calculateFitnessPopulation(Population, NewPopulation).
-%calculateFitnessIndividualAux(1000000, ["D", "R", "U", "L", "U"], (3, 3), Visited, NewFitness).
-%calculateFitnessIndividualAux(1000000, ["L","L","U","U","R","R","R"], (3, 3), Visited, NewFitness).
-%coDaddy(CrossOverPoint, MovesDaddy, StoppingPoint, CompletedSon) :- 
-%coMommy(3, ["U", "L", "L", "D", "R"], Son, Stop, Last).
-%coMommy(4, ["U", "L", "L", "D", "R"], Son, Stop, Last).
-%addCoherentMoves(["U", "L", "L", "D", "R"], "R", CMSon).
-%coMommy(3, ["U", "L", "L", "D", "R"], Son, StoppingPoint).
-%crossOverIndividual(5,individual(2,_,["U", "L", "L", "D", "R"]), individual(2,_,["D", "R", "U", "L", "U"]), Son).
-%initPopulation(5, Population, 1000), crossover(Population, NewPopulation, 5), crossover(NewPopulation, Np, 5).

@@ -23,8 +23,8 @@ drawIndividual_(_, (Xe, Ye), (Xe, Ye), _).
 drawIndividual_(_,_,_,[]).
 drawIndividual_(Maze, S, E, [M|Moves]) :-
     makeAMove(S, M, Result),
-    (isValidMove(Result)) -> (cls, drawPoint(Result, Maze), sleep(0.5), drawIndividual_(Maze, Result, E, Moves));
-    (cls, drawPoint(S, Maze), sleep(0.5), drawIndividual_(Maze, S, E, Moves)).
+    (isValidMove(Result)) -> (cls, drawPoint(Result, Maze), sleep(0.1), drawIndividual_(Maze, Result, E, Moves));
+    (cls, drawPoint(S, Maze), sleep(0.1), drawIndividual_(Maze, S, E, Moves)).
 
 drawIndividual(Maze, individual(_,_,Moves)) :- mazeSpawn(Spawn), mazeExit(Exit), drawIndividual_(Maze, Spawn, Exit, Moves).
 
@@ -47,13 +47,13 @@ sleep(0.5),
 writeln("                                                                                             FINAL EDITION ™"),
 sleep(1),
 writeln("O SOLUCIONADOR MAIS EFICIENTE DO MERCADO PROPORCIONADO PELO GRUPO:\n"),
-sleep(2),
+sleep(1),
 writeln("Wesley: o CYKA BLYAT da recursão"),
-sleep(1),
+sleep(0.5),
 writeln("Eduardo: o MUTANTE com chicungunha"),
-sleep(1),
+sleep(0.5),
 writeln("João Marcos: o GERADOR de caminhos"),
-sleep(1),
+sleep(0.5),
 writeln("Henrique: o FINISHER burocrático"),
-sleep(1),
+sleep(0.5),
 writeln("Flavio: o DEBUGGER quântico").

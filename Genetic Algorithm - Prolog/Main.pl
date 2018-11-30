@@ -4,7 +4,7 @@
 :- use_module('Display').
 :- use_module(library(statistics)).
 :- set_prolog_stack(local,  limit(2 000 000 000)).
-:- set_prolog_stack(global,  limit(1 000 000 000)).
+:- set_prolog_stack(global,  limit(2 000 000 000)).
 :- initialization main.
 
 % Fazer Esse Método
@@ -30,18 +30,64 @@ solve(Population, BestIndividual, ChromossomeSize) :-
     ((Fitness > 1000000) -> BestIndividual = FirstBestIndividual;
     applyMethodToThePopulation(CalculatedPopulation, BestIndividual, ChromossomeSize)).
 
+dumbSolve(0, Individuo) :- 
+    chromossomeSize(ChromossomeSize),initPopulation(ChromossomeSize, Population, 1000),
+    calculateFitnessPopulation(Population, CalculatedPopulation),
+    first(CalculatedPopulation, individual(Gen, Fitness, Moves)),
+    write("Geração "), write(0), write(":"), write(Fitness), writeln(Moves),
+    FirstBestIndividual = individual(Gen, Fitness, Moves),
+    ((Fitness > 1000000), Individuo = FirstBestIndividual; dumbSolve(1,Individuo)).
+dumbSolve(1, Individuo) :-
+    chromossomeSize(ChromossomeSize),initPopulation(ChromossomeSize, Population, 1000),
+    calculateFitnessPopulation(Population, CalculatedPopulation),
+    first(CalculatedPopulation, individual(Gen, Fitness, Moves)),
+    write("Geração "), write(1), write(":"), write(Fitness), writeln(Moves),
+    FirstBestIndividual = individual(Gen, Fitness, Moves),
+    ((Fitness > 1000000), Individuo = FirstBestIndividual; dumbSolve(2,Individuo)).
+dumbSolve(2, Individuo) :-
+    chromossomeSize(ChromossomeSize),initPopulation(ChromossomeSize, Population, 1000),
+    calculateFitnessPopulation(Population, CalculatedPopulation),
+    first(CalculatedPopulation, individual(Gen, Fitness, Moves)),
+    write("Geração "), write(2), write(":"), write(Fitness), writeln(Moves),
+    FirstBestIndividual = individual(Gen, Fitness, Moves),
+    ((Fitness > 1000000), Individuo = FirstBestIndividual; dumbSolve(3,Individuo)).
+dumbSolve(3, Individuo) :-
+    chromossomeSize(ChromossomeSize),initPopulation(ChromossomeSize, Population, 1000),
+    calculateFitnessPopulation(Population, CalculatedPopulation),
+    first(CalculatedPopulation, individual(Gen, Fitness, Moves)),
+    write("Geração "), write(3), write(":"), write(Fitness), writeln(Moves),
+    FirstBestIndividual = individual(Gen, Fitness, Moves),
+    ((Fitness > 1000000), Individuo = FirstBestIndividual; dumbSolve(4,Individuo)).
+dumbSolve(4, Individuo) :-
+    chromossomeSize(ChromossomeSize),initPopulation(ChromossomeSize, Population, 1000),
+    calculateFitnessPopulation(Population, CalculatedPopulation),
+    first(CalculatedPopulation, individual(Gen, Fitness, Moves)),
+    write("Geração "), write(4), write(":"), write(Fitness), writeln(Moves),
+    FirstBestIndividual = individual(Gen, Fitness, Moves),
+    Individuo = FirstBestIndividual, sleep(3).
+
 main :-   
     % Pega o tamanho do labirinto, gera o labirinto, calcula o chromossomeSize, inicia uma população de 1000 individuos baseados nesses valores.
+    cls,
+    showTitle,
     readNumber(Size), maze(Size, Maze), ln, showList(Maze), ln, 
     chromossomeSize(ChromossomeSize), initPopulation(ChromossomeSize, Population, 1000),
     solve(Population, Individuo, ChromossomeSize), sleep(5),
-    drawIndividual(Maze,Individuo), writeln(Individuo).
+    drawIndividual(Maze,Individuo),
+    cls,
+    sleep(3),
+    writeln("Veja o individuo burro"),
+    sleep(3),
+    cls,
+    showList(Maze),
+    dumbSolve(0,DumbIndividuo),
+    drawIndividual(Maze, DumbIndividuo).
+
+
+    
 
 mainTest :- maze(5,Maze), ln, showList(Maze), ln,
         initPopulation(5, Population, 5),
         showList(Population), ln,
         calculateFitnessPopulation(Population, NewPopulation),
         showList(NewPopulation), ln.
-
-%Test
-%buildIndividuo(10, Individual), drawIndividual(Individual).
